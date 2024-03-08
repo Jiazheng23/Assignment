@@ -78,8 +78,26 @@ int main() {
 		scanf("%d",&staffOption);
 
 		switch (staffOption) {
-			case 1:break;
-			case 2:break;
+			case 1: printf("Enter Your Staff ID :");
+					scanf("%d",&StaffModel.staffId);
+					printf("Enter Your Staff Password :");
+					scanf("%c",&StaffModel.staffPass);
+
+					int count=3;
+					if (StaffModel.staffPass == 1) {
+						count--;
+						printf("Please Confirm Password.");
+						printf("You only have %d more times to Enter the Valid Password.",count);
+					}
+					else {
+						printf("Your login are successful");
+					}
+					
+					break;
+			case 2:printf("Hi,Welcome to our Big Family!!");
+					printf("Enter your Staff ID:");
+					
+					break;
 			case 3:system("cls");
 					main();
 					break;
