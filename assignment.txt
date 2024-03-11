@@ -11,7 +11,7 @@ typedef struct {
 }SchedulingModel;
 
 typedef struct {
-	char staffName,password,passwordRecovery ;
+	char staffName,staffPass,SPassRecovery ;
 	int staffId;
 	int position;
 }AdminstratorModel;
@@ -57,14 +57,14 @@ void memberMode() {
 void error() {
 	system("cls");
 	printf("invalid input please try again             \n");
-	printf("Please press ENTER key to go back MAIN MENU\n");
-	scanf("%c",&enter);
-	int main();
+	printf("1.Go back main menu \n");
+	printf("2.Exit the program \n");
+	
 }
 
 int main() {
 	system("color 70");
-	int menuOption,memberOption;
+	int menuOption,memberOption,errorOption;
 	
 	mainMenu();
 	scanf("%d",&menuOption);
@@ -94,18 +94,50 @@ int main() {
 					}
 					
 					break;
-			case 2:printf("Hi,Welcome to our Big Family!!");
+			case 2: system("cls");
+					printf("Hi,Welcome to our Big Family!!\n");
 					printf("Enter your Staff ID:");
+					scanf("%d",&StaffModel.staffId);
 					
+					int staID;
+
+					FILE * staffFile;
+					
+					staffFile = fopen("test.txt","w");	
+					
+					if (staffFile == NULL) {
+						printf("Can't Open the file text.txt!");
+						exit(-1);
+					}
+					fprintf(staffFile,"%d",StaffModel.staffId);
+
+					fclose(staffFile);
+
+					printf("Successful Create New Staff!");
+					
+					printf("Please press ENTER key to go back MAIN MENU");
+					scanf("%c", &enter);
+					main();
+
 					break;
 			case 3:system("cls");
 					main();
 					break;
 			case 4:exit (0);
-			default:error();
+			default:
+					do {
+					error();
+					scanf("%d", &errorOption);
+					if (errorOption == 1) {
+						main();
+					}
+					else if (errorOption == 2) {
+						exit(-1);
+					}
+					}while(errorOption !=1 || errorOption != 2);
+			}
 				
 		}
-	}
 	else if (menuOption == 2) {
 		memberMode();
 		printf("Enter Your Option");
