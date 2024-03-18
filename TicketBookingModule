@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+#pragma warning (disable:4996)
+
+typedef struct {
+	char bookingID[10], memberID[6], trainID[6], bookingDate[11], departDate[11],
+		departStation[40], arriveStation[40], paymentType, ticketStatus;
+	int seatNo, quantity;
+	float paymentAmt;
+}TrainTicket;
+
+//bookingID memberID trainID bookingDate departDate seatNo coachNo quantity paymentType paymentAmt ticketStatus
+//departStation arriveStation
+
+void bookingMain() {
+	printf("Thank you for using XXX train!   \n");
+	printf("---------------------------------\n");
+	printf("|         Ticket Booking        |\n");
+	printf("=================================\n");
+	printf("1. Book ticket                   \n");
+	printf("2. Check ticket status           \n");
+	printf("3. Edit booking                  \n");
+	printf("4. Cancel booking                \n");
+	printf("5. Display booked tickets        \n");
+	printf("   (staff only)                  \n");
+	printf("6. Daily report (staff only)     \n");
+	printf("7. Return to main menu           \n\n");
+	printf("Press 0 to exit program          \n");
+	printf("Select your option (1-6): ");
+};
+
+void bookTicket() {
+	system("cls");
+	printf("---------------------------------\n");
+	printf("|         Book tickets          |\n");
+	printf("=================================\n");
+}
+
+void main() {
+	int choice = 0, login = 1;
+
+	bookingMain();
+	rewind(stdin);
+	scanf("%d", &choice);
+
+	switch (choice) {
+	case 1: 
+		if (login == 1) {		//'login' is an identifier to determine if the customer has logged in as a member or not
+			bookTicket();		//'login' = 0 means havent log in, 1 means logged in
+
+		};
+		break;
+	}
+
+}
