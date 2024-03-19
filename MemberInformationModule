@@ -1,0 +1,152 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#pragma warning (disable : 4996)
+
+typedef struct {
+	char memberID[10], name[50], password[20], passwordRecovery[50],
+		gender, IC[20], contactNo[15], bookingID[10];
+} Member;
+
+void signUp(FILE* file);
+void login(FILE* file);
+void modifyMember(FILE* file, const char* memberID);
+void displayMembers(FILE* file);
+void deleteMember(FILE* file, const char* memberID);
+
+void main() {
+	FILE* memberFile;
+	memberFile = fopen("members.dat", "rb+"); //For binary file to read and write
+
+	if (memberFile == NULL) {
+		memberFile = fopen("members.dat", "wb+");
+		if (memberFile == NULL) {
+			printf("File not created");
+			exit(-1);
+		}
+	}
+
+	int userType;
+	printf("========================================\n");
+	printf("+ Welcome to Member Information Module +\n");
+	printf("========================================\n");
+	printf("Are you a staff or member?\n");
+	printf("1. Staff\n");
+	printf("2. Member\n");
+	printf("Enter your User type: ");
+	scanf("%d", &userType);
+	system("cls");
+
+	int choice;
+	if (userType == 1) { //Staff
+		do {
+			printf("\nPlease enter a number that you want to select\n");
+			printf("1. Search Member\n");
+			printf("2. Modify Member\n");
+			printf("3. Display Members\n");
+			printf("4. Delete Member\n");
+			printf("5. Exit\n");
+			printf("Please enter your choice: ");
+			scanf("%d", &choice);
+
+			switch (choice) {
+			case 1:
+				// Search
+				break;
+
+			case 2:
+				//Modify
+				break;
+
+			case 3:
+				//Display
+				break;
+
+			case 4:
+				//Delete
+				break;
+
+			case 5:
+				printf("\nYou have exit the file. Wish you have a nice day. ^_^\n");
+				break;
+
+			default:
+				printf("\nInvalid choice, Please select a number between 1 to 5.\n");
+			}
+
+		} while (choice != 5);
+	}
+	else if (userType == 2) {
+		do {
+			printf("\nPlease enter a number that you want to select\n");
+			printf("1. Sign Up\n");
+			printf("2. Login\n");
+			printf("3. Modify Account\n");
+			printf("4. Display Account\n");
+			printf("5. Delete Account\n");
+			printf("6. Exit\n");
+			printf("Please enter your choice: ");
+			scanf("%d", &choice);
+
+			switch (choice) {
+			case 1:
+				// Sign up
+				break;
+
+			case 2:
+				//Login
+				break;
+
+			case 3:
+				//Modify
+				break;
+
+			case 4:
+				//Display
+				break;
+
+			case 5:
+				//Delete
+				break;
+
+			case 6:
+				printf("\nYou have exit the file. Wish you have a nice day. ^_^\n");
+				break;
+
+			default:
+				printf("\nInvalid choice, Please select a number between 1 to 6.\n");
+			}
+		} while (choice != 6);
+	}
+	else {
+		printf("Invalid user type.\n");
+	}
+
+	fclose(memberFile);
+
+}
+
+void signUp(FILE* file) {
+	//Sign up funtion
+}
+
+void login(FILE* file) {
+	//Login function
+}
+
+void modifyMember(FILE* file, const char* memberID) {
+	//Modify function
+}
+
+void displayMembers(FILE* file) { //Display member
+	fseek(file, 0, SEEK_SET); //Start with beginning of the file
+
+	Member member;
+	while (fread(&member, sizeof(Member), 1, file) == 1) {
+		printf("Member ID: %s\n", member.memberID);
+	}
+}
+
+void deleteMember(FILE* file, const char* memberID) {
+	//Delete function
+}
