@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #pragma warning (disable:4996)
 
 typedef struct {
 	char bookingID[10], memberID[6], trainID[6], bookingDate[11], departDate[11],
 		departStation[40], arriveStation[40], paymentType, ticketStatus;
-	int seatNo, quantity;
+	int coachNo, seatNo, quantity;
 	float paymentAmt;
 }TrainTicket;
 
@@ -62,16 +64,44 @@ void bookTicket() {
 	typedef struct {
 		char bookingID[10], memberID[6], trainID[6], bookingDate[11], departDate[11],
 			departStation[40], arriveStation[40], paymentType, ticketStatus;
-		int seatNo, quantity;
+		int coachNo, seatNo, quantity;
 		float paymentAmt;
 	}TrainTicket;
 
+	TrainTicket ticket[50];
+
+	char bookingID[10], memberID[10], trainID[6], bookingDate[11], depart[11],
+		departStation[40], arriveStation[40], paymentType, ticketStatus;
+	int coachNo, seatNo, quantity;
+	float paymentAmt;
+
 	//declarations here
+
+	FILE* bookTicket;
+	bookTicket = fopen("BookedTickets.txt", "a");
+
+	//if no file found, exit program
+	if (bookTicket == NULL) {
+		printf("No file found. Please create file.");
+		exit(-1);
+	}
 
 	printf("---------------------------------\n");
 	printf("|         Book tickets          |\n");
 	printf("=================================\n");
 	printf("Insert member ID: ");
+	rewind(stdin);
+	scanf("%[^\n]", memberID);
+	if (memberID[0] != 'M' || isdigit(memberID[1]) != 1 || isdigit(memberID[2]) != 1
+		|| isdigit(memberID[3]) != 1 || isdigit(memberID[4]) != 1) {
+		printf("Invalid format, please enter again.\n");
+		printf("Insert member ID: ");
+		rewind(stdin);
+		scanf("%[^\n]", memberID);
+	}
+	else {
+
+	}
 }
 
 void checkTicketStatus() {
