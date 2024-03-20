@@ -19,7 +19,7 @@ void main() {
 	memberFile = fopen("members.dat", "rb+"); //For binary file to read and write
 
 	if (memberFile == NULL) {
-		memberFile = fopen("members.dat", "wb+");
+		memberFile = fopen("members.dat", "wb+"); // If file doesn't exist, create it
 		if (memberFile == NULL) {
 			printf("File not created");
 			exit(-1);
@@ -90,7 +90,7 @@ void main() {
 
 			switch (choice) {
 			case 1:
-				// Sign up
+				signUp(memberFile);
 				break;
 
 			case 2:
@@ -127,7 +127,24 @@ void main() {
 }
 
 void signUp(FILE* file) {
-	//Sign up funtion
+	Member newMember;
+
+	//Auto generate a unique member ID
+	fseek(file, 0, SEEK_END); //start at the of end of the file
+	int numMembers = ftell(file) / sizeof(Member); // To determine current position of file pointer within members.dat file
+	sprintf(newMember.memberID, "M%04d", numMembers + 1); // To store the generated member ID in newMember.memberID variable before writing the member record to the file
+
+	//Get other member details
+	printf("Enter Name: ");
+	scanf("%s", newMember.name);
+	printf("Enter Password: ");
+	scanf("%s", newMember.password);
+
+
+	//Append new member record to the file
+	fseek(file, 0, SEEK_END); // start from end of the file
+	fwrite(&newMember, sizeof(Member), 1, file);
+	printf("Sign up successful");
 }
 
 void login(FILE* file) {
@@ -142,9 +159,15 @@ void displayMembers(FILE* file) { //Display member
 	fseek(file, 0, SEEK_SET); //Start with beginning of the file
 
 	Member member;
+	printf("====================================================\n");
+	printf("| %-10s || %-20s || %-10s |\n", "Member ID", "Name", "Password");
+	printf("====================================================\n");
+
 	while (fread(&member, sizeof(Member), 1, file) == 1) {
-		printf("Member ID: %s\n", member.memberID);
+		printf("| %-10s || %-20s || %-10s |\n\n", member.memberID, member.name, member.password);
 	}
+
+	printf("====================================================\n");
 }
 
 void deleteMember(FILE* file, const char* memberID) {
