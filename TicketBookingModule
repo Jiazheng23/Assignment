@@ -38,41 +38,35 @@ void main() {
 		};
 		break;
 	case 2:
+		break;
 	}
 
 }
 
 void bookingMain() {
-	printf("Thank you for using XXX train!    \n");
-	printf("----------------------------------\n");
-	printf("|         Ticket Booking         |\n");
-	printf("==================================\n");
-	printf("[1] Book ticket                   \n");
-	printf("[2] Check ticket status           \n");
-	printf("[3] Edit booking                  \n");
-	printf("[4] Cancel booking                \n");
-	printf("[5] Display booked tickets        \n");
-	printf("   (staff only)                   \n");
-	printf("[6] Report       (staff only)     \n");
-	printf("[7] Return to main menu           \n\n");
-	printf("Press 0 to exit program           \n");
+	printf("Thank you for using XXX train!              \n");
+	printf("--------------------------------------------\n");
+	printf("|              Ticket Booking              |\n");
+	printf("============================================\n");
+	printf("[1] Book ticket                             \n");
+	printf("[2] Check ticket status                     \n");
+	printf("[3] Edit booking                            \n");
+	printf("[4] Cancel booking                          \n");
+	printf("[5] Display booked tickets (staff only)     \n");
+	printf("[6] Report (staff only)                     \n");
+	printf("[7] Return to main menu                     \n\n");
+	printf("Press 0 to exit program                     \n");
 	printf("Select your option (1-7): ");
 };
 
 void bookTicket() {
 	system("cls");
-	typedef struct {
-		char bookingID[10], memberID[6], trainID[6], bookingDate[11], departDate[11],
-			departStation[40], arriveStation[40], paymentType, ticketStatus;
-		int coachNo, seatNo, quantity;
-		float paymentAmt;
-	}TrainTicket;
 
 	TrainTicket ticket[50];
 
-	char bookingID[10], memberID[10], trainID[6], bookingDate[11], depart[11],
+	char bookingID[6], memberID[6], trainID[6], bookingDate[11], departDate[11],
 		departStation[40], arriveStation[40], paymentType, ticketStatus;
-	int coachNo, seatNo, quantity;
+	int coachNo, seatNo, quantity, day, month, year;
 	float paymentAmt;
 
 	//declarations here
@@ -92,16 +86,23 @@ void bookTicket() {
 	printf("Insert member ID: ");
 	rewind(stdin);
 	scanf("%[^\n]", memberID);
-	if (memberID[0] != 'M' || isdigit(memberID[1]) != 1 || isdigit(memberID[2]) != 1
-		|| isdigit(memberID[3]) != 1 || isdigit(memberID[4]) != 1) {
+	while (memberID[0] != 'M' || isdigit(memberID[1]) == 0 || isdigit(memberID[2]) == 0
+		|| isdigit(memberID[3]) == 0 || isdigit(memberID[4]) == 0) {
 		printf("Invalid format, please enter again.\n");
 		printf("Insert member ID: ");
 		rewind(stdin);
 		scanf("%[^\n]", memberID);
 	}
-	else {
-
+	printf("Insert booking date (DD-MM-YYYY):\n");
+	rewind(stdin);
+	scanf("%d-%d-%d", &day, &month, &year);
+	while (!(day >= 0) || !(day <= 31) || !(month >= 0) || !(month <= 12) || !(year >= 2024) || !(year <= 2026)) {
+		printf("Invalid date format, please enter again.\n");
+		printf("Insert booking date (DD-MM-YYYY):\n");
+		rewind(stdin);
+		scanf("%d-%d-%d", &day, &month, &year);
 	}
+
 }
 
 void checkTicketStatus() {
