@@ -26,24 +26,68 @@ void main() {
 	int choice = 0, login = 1;
 	//'login' is an identifier to determine if the customer has logged in as a member or not
 	//'login' = 0 means havent log in, 1 means logged in
+	//ONLY 1ST FUNCTION/MODULE IS AVAILABLE FOR NOW
 	bookingMain();
 	rewind(stdin);
 	scanf("%d", &choice);
 
-	switch (choice) {
-	case 1: 
-		if (login == 1) {
-			bookTicket();
+	while (choice < 0 || choice > 7) { //loop if invalid choice entered
+		bookingMain();
+		printf("\nInvalid choice, please enter again.\n");
+		rewind(stdin);
+		scanf("%d", &choice);
+	}
+	if (choice == 0) {
+		system("cls");
+		printf("Thank you for using our system!\n");
+		exit(0);
+	}
+	else {
 
-		};
-		break;
-	case 2:
-		break;
+		switch (choice) {
+		case 1:
+			if (login == 1) {
+				bookTicket();
+
+			};
+			break;
+		case 2:
+			if (login == 1) {
+				checkTicketStatus();
+
+			};
+			break;
+		case 3:
+			if (login == 1) {
+				editBooking();
+
+			};
+			break;
+		case 4:
+			if (login == 1) {
+				cancelBooking();
+
+			};
+			break;
+		case 5:
+			if (login == 1) {
+				displayBookedTickets();
+
+			};
+			break;
+		case 6:
+			if (login == 1) {
+				report();
+
+			};
+			break;
+		}
 	}
 
 }
 
 void bookingMain() {
+	system("cls");
 	printf("Thank you for using XXX train!              \n");
 	printf("--------------------------------------------\n");
 	printf("|              Ticket Booking              |\n");
@@ -87,7 +131,7 @@ void bookTicket() {
 	rewind(stdin);
 	scanf("%[^\n]", memberID);
 	while (memberID[0] != 'M' || isdigit(memberID[1]) == 0 || isdigit(memberID[2]) == 0
-		|| isdigit(memberID[3]) == 0 || isdigit(memberID[4]) == 0) {
+		|| isdigit(memberID[3]) == 0 || isdigit(memberID[4]) == 0 || strlen(memberID) > 5) {
 		system("cls");
 		printf("--------------------------------------------\n");
 		printf("|                Book tickets              |\n");
@@ -99,6 +143,7 @@ void bookTicket() {
 	}
 	//insert booking date
 	system("cls");
+	printf("%s", memberID);
 	printf("--------------------------------------------\n");
 	printf("|                Book tickets              |\n");
 	printf("============================================\n");
