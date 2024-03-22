@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #pragma warning (disable : 4996)
 
 typedef struct {
@@ -9,10 +10,12 @@ typedef struct {
 } Member;
 
 void signUp(FILE* file);
-void login(FILE* file);
+void searchMember(FILE* file, const char* memberID);
 void modifyMember(FILE* file, const char* memberID);
 void displayMembers(FILE* file);
 void deleteMember(FILE* file, const char* memberID);
+int staffLogin();
+int memberLogin(FILE* file);
 
 void main() {
 	FILE* memberFile;
@@ -30,99 +33,169 @@ void main() {
 	printf("========================================\n");
 	printf("+ Welcome to Member Information Module +\n");
 	printf("========================================\n");
-	printf("Are you a staff or member?\n");
+	printf("Choose your user type\n");
 	printf("1. Staff\n");
 	printf("2. Member\n");
-	printf("Enter your User type: ");
+	printf("3. Non-member\n");
+	printf("Enter your user type: ");
 	scanf("%d", &userType);
 	system("cls");
 
-	int choice;
-	if (userType == 1) { //Staff
-		do {
-			printf("\nPlease enter a number that you want to select\n");
-			printf("1. Search Member\n");
-			printf("2. Modify Member\n");
-			printf("3. Display Members\n");
-			printf("4. Delete Member\n");
-			printf("5. Exit\n");
-			printf("Please enter your choice: ");
-			scanf("%d", &choice);
 
-			switch (choice) {
-			case 1:
-				// Search
-				break;
+	switch (userType) {
+	case 1:
+		if (staffLogin()) { //Login successful
+			int choice;
+			do {
+				printf("\nPlease enter a number that you want to select\n");
+				printf("1. Search Member\n");
+				printf("2. Modify Member\n");
+				printf("3. Display Members\n");
+				printf("4. Delete Member\n");
+				printf("5. Exit\n");
+				printf("Enter your choice: ");
+				scanf("%d", &choice);
 
-			case 2:
-				//Modify
-				break;
+				switch (choice) {
 
-			case 3:
-				//Display
-				break;
+				case 1:
+					searchMember(memberFile, NULL);
+					break;
 
-			case 4:
-				//Delete
-				break;
+				case 2:
+					//Modify function
+					break;
 
-			case 5:
-				printf("\nYou have exit the file. Wish you have a nice day. ^_^\n");
-				break;
+				case 3:
+					displayMembers(memberFile);
+					break;
 
-			default:
-				printf("\nInvalid choice, Please select a number between 1 to 5.\n");
-			}
+				case 4:
+					// Delete function
+					break;
 
-		} while (choice != 5);
-	}
-	else if (userType == 2) {
-		do {
-			printf("\nPlease enter a number that you want to select\n");
-			printf("1. Sign Up\n");
-			printf("2. Login\n");
-			printf("3. Modify Account\n");
-			printf("4. Display Account\n");
-			printf("5. Delete Account\n");
-			printf("6. Exit\n");
-			printf("Please enter your choice: ");
-			scanf("%d", &choice);
+				case 5:
+					printf("\nYou have exit the file. Wish you have a nice day. ^_^\n");
+					break;
 
-			switch (choice) {
-			case 1:
-				signUp(memberFile);
-				break;
+				default:
+					printf("\nInvalid choice, Please select a number between 1 to 5.\n");
+				}
+			} while (choice != 5);
+		}
 
-			case 2:
-				//Login
-				break;
+		else {
+			signUp(memberFile);
+		}
+		break;
 
-			case 3:
-				//Modify
-				break;
+	case 2:
+		if (memberLogin(memberFile)) { // Successful login
+			int choice;
+			do {
+				printf("\nPlease enter a number that you want to select\n");
+				printf("1. Modify Account\n");
+				printf("2. Display Account\n");
+				printf("3. Delete Account\n");
+				printf("4. Exit\n");
+				printf("Enter your choice: ");
+				scanf("%d", &choice);
 
-			case 4:
-				//Display
-				break;
+				switch (choice) {
 
-			case 5:
-				//Delete
-				break;
+				case 1:
+					//Modify function
+					break;
 
-			case 6:
-				printf("\nYou have exit the file. Wish you have a nice day. ^_^\n");
-				break;
+				case 2:
+					displayMembers(memberFile);
+					break;
 
-			default:
-				printf("\nInvalid choice, Please select a number between 1 to 6.\n");
-			}
-		} while (choice != 6);
-	}
-	else {
+				case 3:
+					// Delete fuction
+					break;
+
+				case 4:
+					printf("\nYou have exit the file. Wish you have a nice day. ^_^\n");
+					break;
+
+				default:
+					printf("\nInvalid choice, Please select a number between 1 to 5.\n");
+				}
+			} while (choice != 4);
+		}
+		else {
+			signUp(memberFile);
+		}
+		break;
+	case 3:
+		signUp(memberFile); //For non-member
+		break;
+	default:
 		printf("Invalid user type.\n");
+		break;
 	}
 
 	fclose(memberFile);
+
+}
+
+int staffLogin() {
+	char staffID[10], password[20];
+	int attempts = 0;
+
+	const char* correctStaffID = "ST001";
+	const char* correctPassword = "password";
+
+	do {
+		system("cls");
+		printf("\nEnter Staff ID(ST001): ");
+		scanf("%s", staffID);
+		printf("Enter Password: ");
+		scanf("%s", password);
+		attempts++;
+
+		if (strcmp(staffID, correctStaffID) == 0 && strcmp(password, correctPassword) == 0) {
+			printf("Login successful!\n");
+			return 1; // 1 = Successful login
+		}
+
+		else {
+			printf("Invalid Staff ID or Password. Please try again. \n");
+		}
+	} while (attempts < 3);
+
+	printf("You have exceeded the maximum chances of login attempts. Please sign up as staff. \n");
+	return 0; // 0 = Unsuccessful login
+}
+
+int memberLogin(FILE* file) {
+	char memberID[10], password[20];
+	int attempts = 0;
+	Member member;
+
+	fseek(file, 0, SEEK_SET);// Start from beginning
+
+	do {
+		printf("\nEnter Member ID: ");
+		scanf("%s", memberID);
+		printf("Enter Password: ");
+		scanf("%s", password);
+		attempts++;
+
+		while (fread(&member, sizeof(Member), 1, file) == 1) {
+			if (strcmp(member.memberID, memberID) == 0 && strcmp(member.password, password) == 0) {
+				printf("Login successful!\n");
+				return 1; // 1 = Success login
+			}
+		}
+
+		printf("Invalid Member ID or Password. Please try again.\n");
+		fseek(file, 0, SEEK_SET); //Start from beginning for next login attempt
+	} while (attempts < 3);
+
+	printf("You have exceeded the maximum chances of login attempts. Please sign up as a member.\n");
+	return 0; // 0 = Unsuccessful login
 
 }
 
@@ -135,10 +208,20 @@ void signUp(FILE* file) {
 	sprintf(newMember.memberID, "M%04d", numMembers + 1); // To store the generated member ID in newMember.memberID variable before writing the member record to the file
 
 	//Get other member details
+	system("cls");
 	printf("Enter Name: ");
 	scanf("%s", newMember.name);
 	printf("Enter Password: ");
 	scanf("%s", newMember.password);
+	printf("Enter Gender (M/F): ");
+	scanf(" %c", &newMember.gender);//
+	newMember.gender = toupper(newMember.gender); // Let gender be uppercase
+	printf("Enter IC.No: ");
+	scanf("%s", newMember.IC);
+	printf("Enter Contact Number: ");
+	scanf("%s", newMember.contactNo);
+	printf("Enter Booking ID: ");
+	scanf("%s", newMember.bookingID);
 
 
 	//Append new member record to the file
@@ -147,27 +230,27 @@ void signUp(FILE* file) {
 	printf("Sign up successful");
 }
 
-void login(FILE* file) {
-	//Login function
+void searchMember(FILE* file, const char* memberID){
+	//Search function
 }
 
 void modifyMember(FILE* file, const char* memberID) {
 	//Modify function
 }
 
-void displayMembers(FILE* file) { //Display member
-	fseek(file, 0, SEEK_SET); //Start with beginning of the file
-
+void displayMembers(FILE* file) {
+	fseek(file, 0, SEEK_SET); // Start with the beginning of the file
 	Member member;
-	printf("====================================================\n");
-	printf("| %-10s || %-20s || %-10s |\n", "Member ID", "Name", "Password");
-	printf("====================================================\n");
+
+	printf("=============================================================================================================================\n");
+	printf("| %-10s || %-20s || %-20s || %-20s || %-7s || %-15s || %-10s |\n", "Member ID", "Name", "Password", "Password Recovery", "Gender", "IC", "Contact Number", "Booking ID");
+	printf("=============================================================================================================================\n");
 
 	while (fread(&member, sizeof(Member), 1, file) == 1) {
-		printf("| %-10s || %-20s || %-10s |\n\n", member.memberID, member.name, member.password);
+		printf("| %-10s || %-20s || %-20s || %-20s || %-7c || %-15s || %-10s |\n", member.memberID, member.name, member.password, member.passwordRecovery, (char)member.gender, member.IC, member.contactNo, member.bookingID);
 	}
 
-	printf("====================================================\n");
+	printf("=============================================================================================================================\n");
 }
 
 void deleteMember(FILE* file, const char* memberID) {
