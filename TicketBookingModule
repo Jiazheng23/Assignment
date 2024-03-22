@@ -61,46 +61,111 @@ void bookingMain() {
 
 void bookTicket() {
 	system("cls");
-
+	//declarations
 	TrainTicket ticket[50];
 
 	char bookingID[6], memberID[6], trainID[6], bookingDate[11], departDate[11],
-		departStation[40], arriveStation[40], paymentType, ticketStatus;
-	int coachNo, seatNo, quantity, day, month, year;
+		 paymentType, ticketStatus;
+	int coachNo, seatNo, quantity, day, month, year, hour, minute, departStation, arriveStation;
 	float paymentAmt;
 
-	//declarations here
-
+	/*open file
 	FILE* bookTicket;
 	bookTicket = fopen("BookedTickets.txt", "a");
-
+	
 	//if no file found, exit program
 	if (bookTicket == NULL) {
 		printf("No file found. Please create file.");
 		exit(-1);
 	}
-
-	printf("---------------------------------\n");
-	printf("|         Book tickets          |\n");
-	printf("=================================\n");
-	printf("Insert member ID: ");
+	*/
+	//insert member id
+	printf("--------------------------------------------\n");
+	printf("|                Book tickets              |\n");
+	printf("============================================\n");
+	printf("Insert member ID (M****): ");
 	rewind(stdin);
 	scanf("%[^\n]", memberID);
 	while (memberID[0] != 'M' || isdigit(memberID[1]) == 0 || isdigit(memberID[2]) == 0
 		|| isdigit(memberID[3]) == 0 || isdigit(memberID[4]) == 0) {
-		printf("Invalid format, please enter again.\n");
-		printf("Insert member ID: ");
+		system("cls");
+		printf("--------------------------------------------\n");
+		printf("|                Book tickets              |\n");
+		printf("============================================\n");
+		printf("Invalid member format, please enter again.\n");
+		printf("Insert member ID (M****): ");
 		rewind(stdin);
 		scanf("%[^\n]", memberID);
 	}
+	//insert booking date
+	system("cls");
+	printf("--------------------------------------------\n");
+	printf("|                Book tickets              |\n");
+	printf("============================================\n");
 	printf("Insert booking date (DD-MM-YYYY):\n");
 	rewind(stdin);
 	scanf("%d-%d-%d", &day, &month, &year);
 	while (!(day >= 0) || !(day <= 31) || !(month >= 0) || !(month <= 12) || !(year >= 2024) || !(year <= 2026)) {
+		system("cls");
+		printf("--------------------------------------------\n");
+		printf("|                Book tickets              |\n");
+		printf("============================================\n");
 		printf("Invalid date format, please enter again.\n");
 		printf("Insert booking date (DD-MM-YYYY):\n");
 		rewind(stdin);
 		scanf("%d-%d-%d", &day, &month, &year);
+	}
+	//insert departure time
+	system("cls");
+	printf("--------------------------------------------\n");
+	printf("|                Book tickets              |\n");
+	printf("============================================\n");
+	printf("Insert time with 24-hour time format(HH:MM):\n");
+	rewind(stdin);
+	scanf("%d:%d", &hour, &minute);
+	while (hour < 0 || hour > 24 || minute < 0 || minute >= 61) {
+		system("cls");
+		printf("--------------------------------------------\n");
+		printf("|                Book tickets              |\n");
+		printf("============================================\n");
+		printf("Invalid time format, please enter again.\n");
+		printf("Insert time with 24-hour time format(HH:MM):\n");
+		rewind(stdin);
+		scanf("%d:%d", &hour, &minute);
+	}
+	//insert departing station
+	system("cls");
+	printf("--------------------------------------------\n");
+	printf("|                Book tickets              |\n");
+	printf("============================================\n");
+	printf("[ 1]Alor Setar         [ 9]KL Sentral       \n");
+	printf("[ 2]Sungai Petani      [10]Kajang           \n");
+	printf("[ 3]Butterworth        [11]Seremban         \n");
+	printf("[ 4]Taiping            [12]Gemas            \n");
+	printf("[ 5]Ipoh               [13]Segamat          \n");
+	printf("[ 6]Kampar             [14]Kluang           \n");
+	printf("[ 7]Rawang             [15]Kulai            \n");
+	printf("[ 8]Sungai Buloh       [16]JB Sentral       \n\n");
+	printf("Insert departing station (1-16): \n");
+	rewind(stdin);
+	scanf("%d", &departStation);
+	while (departStation < 1 || departStation > 16) {
+		system("cls");
+		printf("--------------------------------------------\n");
+		printf("|                Book tickets              |\n");
+		printf("============================================\n");
+		printf("[ 1]Alor Setar         [ 9]KL Sentral       \n");
+		printf("[ 2]Sungai Petani      [10]Kajang           \n");
+		printf("[ 3]Butterworth        [11]Seremban         \n");
+		printf("[ 4]Taiping            [12]Gemas            \n");
+		printf("[ 5]Ipoh               [13]Segamat          \n");
+		printf("[ 6]Kampar             [14]Kluang           \n");
+		printf("[ 7]Rawang             [15]Kulai            \n");
+		printf("[ 8]Sungai Buloh       [16]JB Sentral       \n\n");
+		printf("Invalid station number, please enter again. \n");
+		printf("Insert departing station (1-16): \n");
+		rewind(stdin);
+		scanf("%d", &departStation);
 	}
 
 }
