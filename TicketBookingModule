@@ -15,6 +15,9 @@ typedef struct {
 //departStation arriveStation
 
 void bookingMain();
+void bookTicketHeading();
+void bookTicketMemberID(char id[6]);
+void bookTicketBookDate(int *d, int *m, int *y);
 void bookTicket();
 void checkTicketStatus();
 void editBooking();
@@ -23,7 +26,11 @@ void displayBookedTickets();
 void report();
 
 void main() {
-	int choice = 0, login = 1;
+	char bookingID[6], memberID[6], trainID[6], bookingDate[11], departDate[11],
+		paymentType, ticketStatus;
+	int coachNo, seatNo, quantity, day, month, year, hour, minute, departStation, arriveStation;
+	float paymentAmt;
+	int choice = 0, counter = 0, login = 1;
 	//'login' is an identifier to determine if the customer has logged in as a member or not
 	//'login' = 0 means havent log in, 1 means logged in
 	//ONLY 1ST FUNCTION/MODULE IS AVAILABLE FOR NOW
@@ -47,9 +54,31 @@ void main() {
 		switch (choice) {
 		case 1:
 			if (login == 1) {
-				bookTicket();
+				counter = 0;
+				do {
+					counter++;
+					system("cls");
+					bookTicketHeading();
+					if (counter > 1) {
+						printf("Invalid member format, please enter again\n");
+					}
+					bookTicketMemberID(memberID);
+				} while (memberID[0] != 'M' || isdigit(memberID[1]) == 0 || isdigit(memberID[2]) == 0
+					|| isdigit(memberID[3]) == 0 || isdigit(memberID[4]) == 0 || strlen(memberID) > 5);
 
-			};
+				//printf("\n%s", memberID);
+				counter = 0;
+				do {
+					counter++;
+					system("cls");
+					bookTicketHeading();
+					if (counter > 1) {
+						printf("Invalid date format, please enter again\n");
+					}
+					bookTicketBookDate(&day, &month, &year);
+				} while (day < 1 || day > 31 || month < 1 || month > 12 || year < 2024);
+				//printf("\n%d-%d-%d", day, month, year);
+			}
 			break;
 		case 2:
 			if (login == 1) {
@@ -103,6 +132,24 @@ void bookingMain() {
 	printf("Select your option (1-7): ");
 };
 
+void bookTicketHeading() {
+	printf("--------------------------------------------\n");
+	printf("|                Book tickets              |\n");
+	printf("============================================\n");
+}
+
+void bookTicketMemberID(char id[6]) {
+	printf("Insert member ID (M****): ");
+	rewind(stdin);
+	scanf("%[^\n]", id);
+}
+
+void bookTicketBookDate(int *d, int *m, int *y) {
+	printf("Insert booking date (DD-MM-YYYY):\n");
+	rewind(stdin);
+	scanf("%d-%d-%d", d, m, y);
+}
+
 void bookTicket() {
 	system("cls");
 	//declarations
@@ -123,43 +170,6 @@ void bookTicket() {
 		exit(-1);
 	}
 	*/
-	//insert member id
-	printf("--------------------------------------------\n");
-	printf("|                Book tickets              |\n");
-	printf("============================================\n");
-	printf("Insert member ID (M****): ");
-	rewind(stdin);
-	scanf("%[^\n]", memberID);
-	while (memberID[0] != 'M' || isdigit(memberID[1]) == 0 || isdigit(memberID[2]) == 0
-		|| isdigit(memberID[3]) == 0 || isdigit(memberID[4]) == 0 || strlen(memberID) > 5) {
-		system("cls");
-		printf("--------------------------------------------\n");
-		printf("|                Book tickets              |\n");
-		printf("============================================\n");
-		printf("Invalid member format, please enter again.\n");
-		printf("Insert member ID (M****): ");
-		rewind(stdin);
-		scanf("%[^\n]", memberID);
-	}
-	//insert booking date
-	system("cls");
-	printf("%s", memberID);
-	printf("--------------------------------------------\n");
-	printf("|                Book tickets              |\n");
-	printf("============================================\n");
-	printf("Insert booking date (DD-MM-YYYY):\n");
-	rewind(stdin);
-	scanf("%d-%d-%d", &day, &month, &year);
-	while (!(day >= 0) || !(day <= 31) || !(month >= 0) || !(month <= 12) || !(year >= 2024) || !(year <= 2026)) {
-		system("cls");
-		printf("--------------------------------------------\n");
-		printf("|                Book tickets              |\n");
-		printf("============================================\n");
-		printf("Invalid date format, please enter again.\n");
-		printf("Insert booking date (DD-MM-YYYY):\n");
-		rewind(stdin);
-		scanf("%d-%d-%d", &day, &month, &year);
-	}
 	//insert departure time
 	system("cls");
 	printf("--------------------------------------------\n");
