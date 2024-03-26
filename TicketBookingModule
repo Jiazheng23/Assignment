@@ -14,11 +14,15 @@ typedef struct {
 //bookingID memberID trainID bookingDate departDate seatNo coachNo quantity paymentType paymentAmt ticketStatus
 //departStation arriveStation
 
+//FUNCTION DECLARATIONS
 void bookingMain();
+void stations();
 void bookTicketHeading();
-void bookTicketMemberID(char id[6]);
-void bookTicketBookDate(int *d, int *m, int *y);
-void bookTicket();
+void enterMemberID(char id[6]);
+void enterBookDate(int *d, int *m, int *y);
+void enterDepartingStation(int *station);
+void enterDepartTime(int *hour, int *minute);
+//void bookTicket();
 void checkTicketStatus();
 void editBooking();
 void cancelBooking();
@@ -55,6 +59,7 @@ void main() {
 		case 1:
 			if (login == 1) {
 				counter = 0;
+				//read memberID
 				do {
 					counter++;
 					system("cls");
@@ -62,12 +67,13 @@ void main() {
 					if (counter > 1) {
 						printf("Invalid member format, please enter again\n");
 					}
-					bookTicketMemberID(memberID);
+					enterMemberID(memberID);
 				} while (memberID[0] != 'M' || isdigit(memberID[1]) == 0 || isdigit(memberID[2]) == 0
 					|| isdigit(memberID[3]) == 0 || isdigit(memberID[4]) == 0 || strlen(memberID) > 5);
-
 				//printf("\n%s", memberID);
+
 				counter = 0;
+				//read bookingDate
 				do {
 					counter++;
 					system("cls");
@@ -75,9 +81,37 @@ void main() {
 					if (counter > 1) {
 						printf("Invalid date format, please enter again\n");
 					}
-					bookTicketBookDate(&day, &month, &year);
+					enterBookDate(&day, &month, &year);
 				} while (day < 1 || day > 31 || month < 1 || month > 12 || year < 2024);
 				//printf("\n%d-%d-%d", day, month, year);
+
+				counter = 0;
+				//read departStation
+				do {
+					counter++;
+					system("cls");
+					bookTicketHeading();
+					stations();
+					if (counter > 1) {
+						printf("Invalid station number, please enter again.\n");
+					}
+					enterDepartingStation(&departStation);
+				} while (departStation < 1 || departStation > 16);
+				//printf(\n"%d", departStation);
+
+				counter = 0;
+				//read departure time
+				do {
+					counter++;
+					system("cls");
+					bookTicketHeading();
+					if (counter > 1) {
+						printf("Invalid station number, please enter again.\n");
+					}
+					enterDepartTime(&hour, &minute);
+				} while (hour < 0 || hour > 24 || minute < 0 || minute > 60);
+				//printf("%d:%d", hour, minute);
+
 			}
 			break;
 		case 2:
@@ -132,67 +166,7 @@ void bookingMain() {
 	printf("Select your option (1-7): ");
 };
 
-void bookTicketHeading() {
-	printf("--------------------------------------------\n");
-	printf("|                Book tickets              |\n");
-	printf("============================================\n");
-}
-
-void bookTicketMemberID(char id[6]) {
-	printf("Insert member ID (M****): ");
-	rewind(stdin);
-	scanf("%[^\n]", id);
-}
-
-void bookTicketBookDate(int *d, int *m, int *y) {
-	printf("Insert booking date (DD-MM-YYYY):\n");
-	rewind(stdin);
-	scanf("%d-%d-%d", d, m, y);
-}
-
-void bookTicket() {
-	system("cls");
-	//declarations
-	TrainTicket ticket[50];
-
-	char bookingID[6], memberID[6], trainID[6], bookingDate[11], departDate[11],
-		 paymentType, ticketStatus;
-	int coachNo, seatNo, quantity, day, month, year, hour, minute, departStation, arriveStation;
-	float paymentAmt;
-
-	/*open file
-	FILE* bookTicket;
-	bookTicket = fopen("BookedTickets.txt", "a");
-	
-	//if no file found, exit program
-	if (bookTicket == NULL) {
-		printf("No file found. Please create file.");
-		exit(-1);
-	}
-	*/
-	//insert departure time
-	system("cls");
-	printf("--------------------------------------------\n");
-	printf("|                Book tickets              |\n");
-	printf("============================================\n");
-	printf("Insert time with 24-hour time format(HH:MM):\n");
-	rewind(stdin);
-	scanf("%d:%d", &hour, &minute);
-	while (hour < 0 || hour > 24 || minute < 0 || minute >= 61) {
-		system("cls");
-		printf("--------------------------------------------\n");
-		printf("|                Book tickets              |\n");
-		printf("============================================\n");
-		printf("Invalid time format, please enter again.\n");
-		printf("Insert time with 24-hour time format(HH:MM):\n");
-		rewind(stdin);
-		scanf("%d:%d", &hour, &minute);
-	}
-	//insert departing station
-	system("cls");
-	printf("--------------------------------------------\n");
-	printf("|                Book tickets              |\n");
-	printf("============================================\n");
+void stations() {
 	printf("[ 1]Alor Setar         [ 9]KL Sentral       \n");
 	printf("[ 2]Sungai Petani      [10]Kajang           \n");
 	printf("[ 3]Butterworth        [11]Seremban         \n");
@@ -201,29 +175,60 @@ void bookTicket() {
 	printf("[ 6]Kampar             [14]Kluang           \n");
 	printf("[ 7]Rawang             [15]Kulai            \n");
 	printf("[ 8]Sungai Buloh       [16]JB Sentral       \n\n");
+}
+
+void bookTicketHeading() {
+	printf("--------------------------------------------\n");
+	printf("|                Book tickets              |\n");
+	printf("============================================\n");
+}
+
+void enterMemberID(char id[6]) {
+	printf("Insert member ID (M****): ");
+	rewind(stdin);
+	scanf("%[^\n]", id);
+}
+
+void enterBookDate(int *d, int *m, int *y) {
+	printf("Insert booking date (DD-MM-YYYY):\n");
+	rewind(stdin);
+	scanf("%d-%d-%d", d, m, y);
+}
+
+void enterDepartingStation(int *stationD) {
 	printf("Insert departing station (1-16): \n");
 	rewind(stdin);
-	scanf("%d", &departStation);
-	while (departStation < 1 || departStation > 16) {
-		system("cls");
-		printf("--------------------------------------------\n");
-		printf("|                Book tickets              |\n");
-		printf("============================================\n");
-		printf("[ 1]Alor Setar         [ 9]KL Sentral       \n");
-		printf("[ 2]Sungai Petani      [10]Kajang           \n");
-		printf("[ 3]Butterworth        [11]Seremban         \n");
-		printf("[ 4]Taiping            [12]Gemas            \n");
-		printf("[ 5]Ipoh               [13]Segamat          \n");
-		printf("[ 6]Kampar             [14]Kluang           \n");
-		printf("[ 7]Rawang             [15]Kulai            \n");
-		printf("[ 8]Sungai Buloh       [16]JB Sentral       \n\n");
-		printf("Invalid station number, please enter again. \n");
-		printf("Insert departing station (1-16): \n");
-		rewind(stdin);
-		scanf("%d", &departStation);
-	}
-
+	scanf("%d", stationD);
 }
+
+void enterDepartTime(int *hour, int *minute) {
+	printf("Insert time with 24-hour time format(HH:MM):\n");
+	rewind(stdin);
+	scanf("%d:%d", hour, minute);
+}
+
+/*
+void bookTicket() {
+	system("cls");
+	//declarations
+	TrainTicket ticket[50];
+
+	char bookingID[6], memberID[6], trainID[6], bookingDate[11], departDate[11],
+		paymentType, ticketStatus;
+	int coachNo, seatNo, quantity, day, month, year, hour, minute, departStation, arriveStation;
+	float paymentAmt;
+
+	FILE* bookTicket;
+	bookTicket = fopen("BookedTickets.txt", "a");
+
+	//if no file found, exit program
+	if (bookTicket == NULL) {
+		printf("No file found. Please create file.");
+		exit(-1);
+	}
+	
+}
+*/
 
 void checkTicketStatus() {
 
