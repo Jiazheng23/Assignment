@@ -20,9 +20,13 @@ void displayBookedTickets();
 void report();
 //input functions
 void getMemberID(char memberID[6], int warning);
-void getDepartDate(int* day, int* month, int* year, int warning);
+void getDepartDate(int* day, int* month, int* year, int sysyear, int warning);
 void getCurrentTime(int* sysday, int* sysmonth, int* sysyear);
 void getStation(char departStation[40], char arriveStation[40], int warning);
+void getQuantity(int* quantity, int warning);
+char getCoach(int warning);
+void getSeatNo(int* seatNo, int noOfSeat, int warning);
+void payment(int quantity);
 
 void main() {
 	int choice;
@@ -116,8 +120,8 @@ void bookTicket() {
 	TrainTicket ticket[100];
 
 	typedef struct {
-		char memberID[6], departStation[40], arriveStation[40];
-		int memberNo, day, month, year;
+		char memberID[6], departStation[40], arriveStation[40], coach;
+		int memberNo, day, month, year, quantity, seatNo[6];
 	}Info;
 	Info user;
 
@@ -158,10 +162,44 @@ void bookTicket() {
 		stations();
 		getStation(user.departStation, user.arriveStation, warning);
 
-		//checking
+		//input BOOKING QUANTITY
+		system("cls");
+		bookTicketHeading();
+		getQuantity(&user.quantity, warning);
+
+		//input COACH
+		system("cls");
+		bookTicketHeading();
+		displayCoach();
+		user.coach = getCoach(warning);
+
+		//input SEAT NUMBER
+		for (int noOfSeat = 0; noOfSeat < user.quantity; noOfSeat++) {
+			system("cls");
+			bookTicketHeading();
+			getSeatNo(&user.seatNo[noOfSeat], noOfSeat, warning);
+		}
+
+		//PAYMENT INFO
+		system("cls");
+		bookTicketHeading();
+		payment(user.quantity);
+
+		//USED FOR CHECKING, DELETE LATER
 		printf("\n%s\n", user.memberID);
 		printf("%02d-%02d-%d\n", user.day, user.month, user.year);
 		printf("%s / %s\n", user.departStation, user.arriveStation);
+		printf("%d\n", user.quantity);
+		printf("%c\n", user.coach);
+		for (int i = 0; i < user.quantity; i++) {
+			printf("%d ", user.seatNo[i]);
+		}
+
+		//INSERT VALUE INTO FILE
+		insertBooking = fopen("Bookings.txt", "a");
+		for (int row = 0; row < user.quantity; row++) {
+			fprintf(insertBooking, "B%d|\n", (ticket[record - 1].bookingNo + 1 + row));
+		}
 	}
 	else {
 		printf("Error opening file.\n");
@@ -189,7 +227,7 @@ void getMemberID(char memberID[6], int warning) {
 		if (warning > 0) {
 			printf("\nInvalid member format, please enter again\n");
 		}
-		printf("Insert member ID (M****): \n");
+		printf("Insert member ID (M****): ");
 		rewind(stdin);
 		scanf("%[^\n]", memberID);
 		memberID[0] = toupper(memberID[0]);
@@ -203,7 +241,7 @@ void getDepartDate(int* day, int* month, int* year, int sysYear, int warning) {
 		if (warning > 0) {
 			printf("\nInvalid date format, please enter again.\n");
 		}
-		printf("Insert departure date (DD-MM-YYYY): \n");
+		printf("Insert departure date (DD-MM-YYYY): ");
 		rewind(stdin);
 		scanf("%d-%d-%d", day, month, year);
 		warning++;
@@ -332,4 +370,50 @@ void getStation(char departStation[40], char arriveStation[40], int warning) {
 	else {
 		strcpy(arriveStation, "JB Sentral");
 	}
+}
+
+void getQuantity(int* quantity, int warning) {
+	do {
+		if (warning > 0) {
+			printf("\nInvalid quantity, please enter again.\n");
+		}
+		printf("Insert booking pax (1-6): ");
+		rewind(stdin);
+		scanf("%d", quantity);
+		warning++;
+	} while (*quantity < 1 || *quantity > 6);
+}
+
+char getCoach(int warning) {
+	char coach;
+	do {
+		if (warning > 0) {
+			printf("\nInvalid coach format, please enter again.\n");
+		}
+		printf("Insert coach alphabet (A-F): ");
+		rewind(stdin);
+		scanf(" %c", &coach);
+		coach = toupper(coach);
+		warning++;
+	} while (coach < 'A' || coach > 'F');
+
+	return coach;
+}
+
+void getSeatNo(int* seatNo, int noOfSeat, int warning) {
+	do {
+		if (warning > 0) {
+			printf("\nSeat has been occupied or invalid number.\n");
+		}
+		printf("Insert seat number %d (1-20): ", noOfSeat + 1);
+		rewind(stdin);
+		scanf("%d", seatNo);
+		warning++;
+	} while (*seatNo < 1 || *seatNo > 20);
+}
+
+void payment(int quantity) {
+	double payment;
+	payment = 30.0 * quantity;
+	printf("Total payment required: RM %.2f\n", payment);
 }
