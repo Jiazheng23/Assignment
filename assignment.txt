@@ -13,8 +13,8 @@ typedef struct {
 }SchedulingModel;
 
 typedef struct {
-	char staffName[20], staffPass[20], staffId[20];
-	char position[20];
+	char staffId[7],staffName[20], staffPass[20];
+	char position[7];
 }AdminstratorModel;
 
 typedef struct {
@@ -24,7 +24,7 @@ typedef struct {
 
 //need one more ticket booking model
 AdminstratorModel StaffModel;
-MemberModel memberModel;
+
 
 
 void mainMenu() {
@@ -65,12 +65,93 @@ void error() {
 }
 
 void deleteStaffInfo() {
+	int found = -1;
+	char staffPass[20], staffId[20], option1,staffName[20];
+	char again,confirm;
+	
+	AdminstratorModel StaffModel[50];
+	FILE* readStaffBinary;
+	readStaffBinary = fopen("binary.bin", "rb");
+	
+	if (readStaffBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	int count = 0;
+	//count the staffmodel array
+	rewind(stdin);
+	while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readStaffBinary)) {
+			count++;
+		}
+	fclose(readStaffBinary);
 
+
+	int totalStaff = 0;
+		totalStaff = count;
+	printf("Enter Your Staff ID :");
+	scanf("%s", staffId);
+
+	printf("===============================================================================================\n");
+	printf(" Staff ID \t\t Staff Name \t\t Staff Passwords \t\t Staff Position \t\t\n");
+
+	for (int i = 0; i < totalStaff; i++) {
+		if (strcmp(StaffModel[i].staffId, staffId ) == 0) {
+			found = i;
+			printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffPass, StaffModel[i].position);	
+		}
+	}
+	printf("===============================================================================================\n");
+	
+
+
+	if (found == -1) {
+		printf("Not Found the Staff Information\n");
+		printf("Do you want to try again?(Y/N)\n");
+		scanf("%c",&again);
+		if (toupper(again) == 'Y') {
+			deleteStaffInfo();
+		}
+		else {
+			main();
+		}
+
+	}else {
+		rewind(stdin);
+		printf("Are you sure u want to delete this Staff Information?(Y/N)");
+		scanf("%c",&confirm);
+
+		if(toupper(confirm) == 'Y'){
+			strcpy(StaffModel[found].staffName, "XXXX");
+			strcpy(StaffModel[found].staffPass, "XXXX");
+			strcpy(StaffModel[found].position,	"XXXX");
+			printf("The Staff infomation are deleted");
+		}
+		else {
+			printf("Nobody will be deleted");
+			main();
+		}
+	}
+
+	
+	FILE* writeBinary;
+
+	writeBinary = fopen("binary.bin", "wb");
+
+	if (writeBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	for (int i = 0; i < totalStaff; i++) {
+		fwrite(&StaffModel[i], sizeof(AdminstratorModel), 1, writeBinary);
+	}
+	
+	fclose(writeBinary);
+	
 }
 
 void searchStaffInfo() {
 	int found = -1;
-	char staffPass[20], staffId[20],option1;
+	char staffPass[20], staffId[20],option1,again;
 	printf("Enter Your Staff ID :");
 	scanf("%s", staffId);
 
@@ -90,26 +171,33 @@ void searchStaffInfo() {
 	}
 
 	int totalStaff = count;
+	printf("===============================================================================================\n");
+	printf(" Staff ID \t\t Staff Name \t\t Staff Passwords \t\t Staff Position \t\t\n");
 
 	for (int i = 0; i < totalStaff; i++) {
-		
 			if (strcmp(StaffModel[i].staffId, staffId) == 0) {
 			found = i;
-			printf("===============================================================================================\n");
-			printf(" Staff ID \t\t Staff Name \t\t Staff Passwords \t\t Staff Position \t\t\n");
 			printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffPass, StaffModel[i].position);
-			printf("===============================================================================================\n");
+			}	
+	}
+	printf("===============================================================================================\n");
+
+	if (found == -1) {
+			printf("Not Found the Staff Information\n");
+			printf("Do you want to try again?(Y/N)\n");
+			scanf("%c",&again);
+		
+			
+
+			if(toupper(again) == 'Y'){
+				searchStaffInfo();
 			}
-		
-			if (found == -1) {
-				printf("Not Found the Staff Information");
-				printf("Do you want to try again?(Y/N)");
-				
-				}
-		
-		
+			else{
+				main();
+			}
 	}
 }
+
 
 void StaffMenu() {
 	int option3;
@@ -150,17 +238,17 @@ void displayStaffInfo() {
 	}
 	int count = 0;
 	//read the data from file and print out
+	printf("===============================================================================================\n");
+	printf(" Staff ID \t\t Staff Name \t\t Staff Passwords \t\t Staff Position \t\t\n");
 	while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
-		printf("===============================================================================================\n");
-		printf(" Staff ID \t\t Staff Name \t\t Staff Passwords \t\t Staff Position \t\t\n");
 		printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel.staffId, StaffModel.staffName, StaffModel.staffPass, StaffModel.position);
-		printf("===============================================================================================\n");
 	}
+	printf("===============================================================================================\n");
 	fclose(readStaffBinary);
 }
 
 void StaffMenu1() {
-	system("cly");
+	system("cls");
 
 	int staffOption1;
 	printf("1.Display Staff Infomation  \n");
@@ -169,7 +257,7 @@ void StaffMenu1() {
 	printf("4.Go back menu              \n");
 	printf("5.Exit                      \n");
 
-	printf("Enter Your Option :\n");
+	printf("Enter Your Option :");
 	scanf("%d",&staffOption1);
 
 	switch (staffOption1) {
@@ -180,7 +268,8 @@ void StaffMenu1() {
 		case 2 :searchStaffInfo();
 				break;
 		//delete staff	
-		case 3 :deleteStaffInfo();break;
+		case 3 :deleteStaffInfo();
+				break;
 		//go back menu
 		case 4 :main();
 				break;
@@ -212,7 +301,7 @@ void RecoveryPass() {
 	int count = 0;
 	//count how many staffmodel 
 	while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
-	count++;
+		count++;
 	}
 	
 	fclose(readStaffBinary);
@@ -239,11 +328,12 @@ void RecoveryPass() {
 		//confirm the password for the user
 		if (StaffModel[found].staffPass != doublePass) {
 			printf("\t\tPlease Try again");
-			main();
+			RecoveryPass();
 		}
 		else {
 			printf("Successful Change Your Passwords");
 			printf("Please remember your Passwords");
+			main();
 		}
 	
 	
@@ -255,6 +345,7 @@ void RecoveryPass() {
 		for (int i = 0; i < totalStaff; i++) {
 			fwrite(&StaffModel[i],sizeof(AdminstratorModel),1,writeNewPass);
 		}
+		
 
 		fclose(writeNewPass);
 	}
@@ -279,6 +370,8 @@ int countStaffNumber(int* totalStaff) {
 	}
 
 	*totalStaff = count;
+
+	fclose(readBinary);
 }
 
 int addStaffInfo() {
@@ -312,20 +405,6 @@ int addStaffInfo() {
 	printf("\nEnter your Name	   :");
 	rewind(stdin);
 	scanf("%[^\n]", StaffModel.staffName);
-	/*while (valid = 1) {
-		
-		if (isalpha(StaffModel.staffName)) {
-			valid++;
-			return 1;
-		}
-		else {
-			printf("Invalid input");
-			return 0;
-		}
-	}*/
-	
-	
-
 
 	printf("\nEnter Your Password  :");
 	rewind(stdin);
@@ -334,25 +413,32 @@ int addStaffInfo() {
 
 	printf("\nEnter Your Position (Boss/Staff):");
 	rewind(stdin);
-	
 	scanf("%s", StaffModel.position);
+	
+	if (strcmp(StaffModel.position,"Staff") || strcmp(StaffModel.position, "Boss")) {
+		fwrite(&StaffModel, sizeof(AdminstratorModel), 1, staffBinary);
+		printf("\nSuccessful Create New Staff! ");
+
+		printf("\n1.Go Back Main Menu.");
+		printf("\n2.Exit ");
+		scanf("%d", &succOption);
+
+		if (succOption == 1) {
+			main();
+		}
+		else if (succOption == 2) {
+			exit(-1);
+		}while (succOption != 1 || succOption != 2);
+	}
+	else {
+		error();
+	}
 
 	
-	fwrite(&StaffModel, sizeof(AdminstratorModel), 1, staffBinary);
+	
 	fclose(staffBinary);
 
-	printf("\nSuccessful Create New Staff! ");
 
-	printf("\n1.Go Back Main Menu.");
-	printf("\n2.Exit ");
-	scanf("%d", &succOption);
-
-	if (succOption == 1) {
-		main();
-	}
-	else if (succOption == 2) {
-		exit(-1);
-	}while (succOption != 1 || succOption != 2);
 
 }
 
@@ -386,35 +472,34 @@ int main() {
 			FILE* readStaffBinary;
 			readStaffBinary = fopen("binary.bin", "rb");
 
-
 			if (readStaffBinary == NULL) {
 				printf("Failed to open file\n");
 				return 1;
 			}
 			int count = 0;
+	
 			//count the staffmodel array
 			while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readStaffBinary)) {
 				count++;
 			}
+			int totalStaff = 0;
 
-			int totalStaff = count;
+			totalStaff = count;
 
 			//Search StaffId
 			for (int i = 0; i < totalStaff; i++) {
 				if (strcmp(StaffModel[i].staffId, staffId) == 0) {
 					found = i;
 				}
-				
-				
 			}
-			if (found == -1) {
-				printf("Not Found");
-			}
-			StaffMenu1();
-
 			fclose(readStaffBinary);
+			if (found == -1) {
+				printf("Unable to login Please try again\n");
+			}
+			else {
+				StaffMenu1();
+			}
 			break;
-
 		}
 		case 2: { //create new staff
 			addStaffInfo();
