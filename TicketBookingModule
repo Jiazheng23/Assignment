@@ -19,6 +19,7 @@ void cancelBooking();
 void displayBookedTickets();
 void report();
 //input functions
+void getBookingID();
 void getMemberID(char memberID[6], int warning);
 void getDepartDate(int* day, int* month, int* year, int sysyear, int warning);
 void getCurrentTime(int* sysday, int* sysmonth, int* sysyear);
@@ -48,22 +49,22 @@ void main() {
 	else {
 		switch (choice) {
 		case 1:
-			bookTicket();
+			bookTicket(); //mainly done except for train id and schedule part, requires some adjustment when integrating
 			break;
 		case 2:
-			checkTicketStatus();
+			checkTicketStatus(); //IN PROGRESS
 			break;
 		case 3:
-			editBooking();
+			editBooking(); //pending
 			break;
 		case 4:
-			cancelBooking();
+			cancelBooking(); //pending
 			break;
 		case 5:
-			displayBookedTickets();
+			displayBookedTickets(); //pending
 			break;
 		case 6:
-			report();
+			report(); //pending
 			break;
 		}
 	}
@@ -78,11 +79,11 @@ void bookingMain() {
 	printf("============================================\n");
 	printf("[1] Book ticket                             \n");
 	printf("[2] Check ticket status                     \n");
-	printf("[3] Edit booking                            \n");
-	printf("[4] Cancel booking                          \n");
-	printf("[5] Display booked tickets (staff only)     \n");
-	printf("[6] Report (staff only)                     \n");
-	printf("[7] Return to main menu                     \n\n");
+	printf("[3] Edit booking                        TBA \n");
+	printf("[4] Cancel booking                      TBA \n");
+	printf("[5] Display booked tickets (staff only) TBA \n");
+	printf("[6] Report (staff only)                 TBA \n\n");
+
 	printf("Press 0 to exit program                     \n");
 	printf("Select your option (1-7): ");
 }
@@ -110,6 +111,7 @@ void displayCoach() {
 	printf("[ 3]Coach C            [ 6]Coach F          \n");
 }
 
+//INSERT NEW BOOKING
 void bookTicket() {
 	//DECLARATIONS
 	typedef struct {
@@ -185,7 +187,12 @@ void bookTicket() {
 		bookTicketHeading();
 		payment(user.quantity);
 
-		//USED FOR CHECKING, DELETE LATER
+		/*input TRAIN ID*/
+
+		/*input TIME*/
+
+		/*
+		USED FOR CHECKING, DELETE LATER
 		printf("\n%s\n", user.memberID);
 		printf("%02d-%02d-%d\n", user.day, user.month, user.year);
 		printf("%s / %s\n", user.departStation, user.arriveStation);
@@ -194,11 +201,15 @@ void bookTicket() {
 		for (int i = 0; i < user.quantity; i++) {
 			printf("%d ", user.seatNo[i]);
 		}
+		*/
 
-		//INSERT VALUE INTO FILE
+		//INSERT VALUE INTO FILE, CHANGE LATER FOR TRAIN ID & TIME (SCHEDULE)
 		insertBooking = fopen("Bookings.txt", "a");
 		for (int row = 0; row < user.quantity; row++) {
-			fprintf(insertBooking, "B%d|\n", (ticket[record - 1].bookingNo + 1 + row));
+			fprintf(insertBooking, "B%d|%s|%02d-%02d-%d|%02d-%02d-%d|%s|%s|T101|%c|%d|30.00\n", (ticket[record - 1].bookingNo + 1 + row),
+				user.memberID, sysDay, sysMonth, sysYear, user.day, user.month, user.year, user.departStation, user.arriveStation,
+				user.coach, user.seatNo[row]);
+			printf("Your No\.%d booking ID is B%d \n", (row + 1), (ticket[record - 1].bookingNo + 1 + row));
 		}
 	}
 	else {
@@ -206,9 +217,67 @@ void bookTicket() {
 	}
 }
 
+//SEARCH BOOKING ID
 void checkTicketStatus() {
+	typedef struct {
+		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
+		int trainNo, seatNo, quantity, day, month, year, hour, minute;
+		double payment;
+	}TrainTicket;
+	TrainTicket ticket[100];
 
+	FILE* readTicketPT;
+
+	//OPEN Bookings.txt for reading
+	readTicketPT = fopen("Bookings.txt", "r");
+
+	if (readTicketPT != NULL) {
+		//RECORDS the amount of rows in file and their values
+		int record = 0;
+		while (!feof(readTicketPT)) {
+			fscanf(readTicketPT, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|T%d|%c|%d|%lf\n", ticket[record].bookingID, ticket[record].memberID,
+				ticket[record].bookingDate, ticket[record].departDate, ticket[record].departStation, ticket[record].arriveStation,
+				&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
+			record++;
+		};
+
+		//ask user to enter bookingID to search for
+		int found = -1, warning2 = 0;
+		do {
+			int warning = 0;
+			char bookingID[6];
+			system("cls");
+			bookTicketHeading();
+			if (warning2 > 0) {
+				printf("BookingID not found, please try again.\n");
+			}
+			getBookingID(bookingID, warning);
+
+			//compare user input with array in file
+			for (int row = 0; row < record; row++) {
+				if (strcmp(ticket[row].bookingID, bookingID) == 0) {
+					found = row;
+					printf("\n");
+					printf("       Booking ID: %s\n", ticket[row].bookingID);
+					printf("        Member ID: %s\n", ticket[row].memberID);
+					printf("     Booking Date: %s\n", ticket[row].bookingDate);
+					printf("   Departure Date: %s\n", ticket[row].departDate);
+					printf("Departure Station: %s\n", ticket[row].departStation);
+					printf("      Destination: %s\n", ticket[row].arriveStation);
+					printf("         Train ID: T%d\n", ticket[row].trainNo);
+					printf("         Coach ID: %c\n", ticket[row].coach);
+					printf("          Seat No: %d\n", ticket[row].seatNo);
+					printf("            Price: %.2lf\n", ticket[row].payment);
+				}
+			}
+			warning2++;
+		} while (found == -1);
+	}
+	else {
+		printf("File not found, system gg.\n");
+	}
 }
+
 void editBooking() {
 
 }
@@ -220,6 +289,20 @@ void displayBookedTickets() {
 }
 void report() {
 
+}
+
+void getBookingID(char bookingID[6], int warning) {
+	do {
+		if (warning > 0) {
+			printf("\nInvalid ID format, please try again.\n");
+		}
+		printf("Search for booking ID status (B****): ");
+		rewind(stdin);
+		scanf("%[^\n]", bookingID);
+		bookingID[0] = toupper(bookingID[0]);
+		warning++;
+	} while (bookingID[0] != 'B' || isdigit(bookingID[1]) == 0 || isdigit(bookingID[2]) == 0
+		|| isdigit(bookingID[3]) == 0 || isdigit(bookingID[4]) == 0 || strlen(bookingID) > 5);
 }
 
 void getMemberID(char memberID[6], int warning) {
