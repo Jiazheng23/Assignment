@@ -13,7 +13,7 @@ typedef struct {
 }SchedulingModel;
 
 typedef struct {
-	char staffId[7],staffName[20],staffIc[9],staffPass[20];
+	char staffId[7],staffName[20],staffIc[14],staffPass[20];
 	char position[7];
 }AdminstratorModel;
 
@@ -133,15 +133,13 @@ void StaffMenu() {
 
 void loginStaff() {
 
-	int memberOption, errorOption, found = -1,wrong = 0;
+	int memberOption, errorOption, found = -1,wrong = 3;
 	char enter,wrongOpiton;
 	char staffPass[20], staffId[20];
 
+
 	printf("Enter Your Staff ID :");
 	scanf("%s", staffId);
-	printf("Enter Your Staff Password :");
-	scanf("%s", staffPass);
-
 
 	AdminstratorModel StaffModel[50];
 	FILE* readStaffBinary;
@@ -157,6 +155,7 @@ void loginStaff() {
 	while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readStaffBinary)) {
 		count++;
 	}
+	fclose(readStaffBinary);
 	int totalStaff = 0;
 
 	totalStaff = count;
@@ -164,38 +163,54 @@ void loginStaff() {
 	//Search StaffId
 	for (int i = 0; i < totalStaff; i++) {
 		if (strcmp(StaffModel[i].staffId, staffId) == 0) {
-			found = i;
-			if (strcmp(StaffModel[i].staffPass, staffPass) == 0) {
-				StaffMenu1();
+			found = i;		
+		}
+	}
+	if (found == -1) {
+		printf("Can not found the Staff ID\n");
+	}
+
+	do{
+		printf("Enter Your Staff Password :");
+		scanf("%s", staffPass);
+		if(strcmp(StaffModel[found].staffPass,"XXX") == 0) {
+			printf("The Staff already deleted");
+		}	
+		else if (strcmp(StaffModel[found].staffPass, staffPass) == 1) {
+			wrong--;
+		}
+	
+		if(wrong != 0)
+		{
+			printf("Please check your ID and Passwords are correct!\n");
+			printf("You still have %d more changes to input right passwords\n",wrong);
+		}
+		else if (wrong == 0) {
+	
+			rewind(stdin);
+			printf("Do you need to recovery Password?(Y/N) :");
+			scanf("%c", &wrongOpiton);
+			
+			
+			wrongOpiton = toupper(wrongOpiton);
+
+			if (wrongOpiton == 'Y') {
+				RecoveryPass();
+			}
+			else if (wrongOpiton == 'N') {
+				system("cls");
+				main();
 			}
 			else {
-				wrong++;
+				error();
 			}
 		}
-	}
-	fclose(readStaffBinary);
-	if (found == -1) {
-		printf("Unable to login Please try again\n");
-	}
-	else if(wrong != 0)
-	{
-		printf("Please check your ID and Passwords are correct!\n");
-	}
-	else if (wrong >= 3) {
-		printf("Do you need to recovery Password?(Y/N)");
-		scanf("%c",&wrongOpiton);
-		wrongOpiton = toupper(wrongOpiton);
-		
-		if (wrongOpiton == 'Y') {
-			RecoveryPass();
-		}
-		else if (wrongOpiton == 'N'){
-			system("cls");
-			main();
-		}
-		else{
-			error();
-		}
+
+	}while(strcmp(StaffModel[found].staffPass, staffPass) != 0 || wrong == 0);
+ 
+	
+	if (strcmp(StaffModel[found].staffPass, staffPass) == 0) {
+		StaffMenu1();
 	}
 }
 
@@ -233,7 +248,7 @@ void deleteStaffInfo() {
 	for (int i = 0; i < totalStaff; i++) {
 		if (strcmp(StaffModel[i].staffId, staffId ) == 0) {
 			found = i;
-			printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffPass, StaffModel[i].position);	
+			printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc, StaffModel[i].staffPass, StaffModel[i].position);
 		}
 	}
 	printf("===============================================================================================\n");
@@ -307,12 +322,12 @@ void searchStaffInfo() {
 
 	for (int i = 0; i < totalStaff; i++) {
 			if (strcmp(StaffModel[i].staffId, staffId) == 0) {
-			found = i;
+				found = i;
 				if (strcmp(StaffModel[i].staffName, "XXX") != 0) {
-					printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffPass, StaffModel[i].position);
+					printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
 				}
 				else {
-					printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffPass, StaffModel[i].position);
+					printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
 					deleted++;
 				}
 			}
@@ -362,10 +377,10 @@ void displayStaffInfo() {
 	char option;
 	//read the data from file and print out
 	printf("===============================================================================================\n");
-	printf(" Staff ID \t\t Staff Name \t\t Staff Passwords \t\t Staff Position \t\t\n");
+	printf(" Staff ID \t\t Staff Name \t\t Staff IC \t\t\t Staff Passwords \t\t\t Staff Position \t\t\n");
 	while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
 		if (strcmp(StaffModel.staffName, "XXX") != 1) {
-			printf(" %s\t\t\t %s\t\t\t  %s\t\t\t\t %s\t\t\t\n", StaffModel.staffId, StaffModel.staffName, StaffModel.staffPass, StaffModel.position);
+			printf(" %s\t\t\t %s\t\t\t %s \t\t\t  %s\t\t\t\t %s\t\t\t\n", StaffModel.staffId, StaffModel.staffName,StaffModel.staffIc, StaffModel.staffPass, StaffModel.position);
 		}
 		else {
 			deleted++;
@@ -398,11 +413,15 @@ void displayStaffInfo() {
 void RecoveryPass() {
 	AdminstratorModel StaffModel[30];
 	AdminstratorModel input;
-	char totalStaff,found = -1,doublePass;
+	char found = -1,doublePass;
+	int totalStaff;
 
 	rewind(stdin);
 	printf("Enter Your Staff ID :");
 	scanf("%[^\n]",input.staffId);
+	printf("Enter Your IC number :");
+	scanf("%s",input.staffIc);
+
 
 	FILE* readStaffBinary;
 	readStaffBinary = fopen("binary.bin", "rb");
@@ -422,8 +441,10 @@ void RecoveryPass() {
 	//search the data
 	for (int i = 0; i < totalStaff; i++) {
 		if (strcmp(StaffModel[i].staffId, input.staffId) == 0) {
-			found = i;
-			break;
+			if(strcmp(StaffModel[i].staffIc, input.staffIc) == 0){
+				found = i;
+				break;
+			}
 		}
 	}
 	
@@ -517,6 +538,32 @@ int addStaffInfo() {
 	printf("\nEnter your Name	   :");
 	rewind(stdin);
 	scanf("%[^\n]", StaffModel.staffName);
+
+	int valid1 = 1;
+	do {
+		printf("Enter IC number (XXXXXX-XX-XXXX): ");
+		scanf("%s", StaffModel.staffIc);
+
+		valid = 1; //Check IC No format
+		if (strlen(StaffModel.staffIc) != 14) {
+			valid1 = 0;
+		}
+		else if (StaffModel.staffIc[6] != '-' || StaffModel.staffIc[9] != '-') {
+			valid1 = 0;
+		}
+		else {
+			for (int i = 0; i < 14; i++) {
+				if (i != 6 && i != 9 && !isdigit(StaffModel.staffIc[i])) {
+					valid1 = 0;
+					break;
+				}
+			}
+		}
+		if (!valid1) {
+			printf("Invalid IC No format. Please enter in the format XXXXXX-XX-XXXX\n");
+		}
+	} while (!valid1);
+	
 
 	printf("\nEnter Your Password  :");
 	rewind(stdin);
