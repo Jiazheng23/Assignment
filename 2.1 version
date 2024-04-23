@@ -4,18 +4,269 @@
 #include <ctype.h>
 #pragma warning (disable : 4996)
 
-#define MAX_NAME_LENGTH 50
-
 typedef struct {
-	char memberID[50], name[50], password[20], passwordRecovery[50],
-		gender, IC[20], contactNo[20], bookingID[10];
+	char name[50], password[20], passwordRecovery[50],
+		gender, icNo[15], contactNo[15], memberID[6];
 }Member;
 
-void staffMenu();
+
+
+//void staffMenu();
 void memberMenu();
 void nonMemberMenu();
 
-int main() {
+
+void nonMemberMenu() {
+	FILE* fp;
+	fp = fopen("members.bin", "ab+");
+
+	if (fp == NULL) {
+		printf("Error opening file. \n");
+		exit(-1);
+	}
+
+	Member newMember;
+	int nameExists;
+
+	do {
+		nameExists = 0;
+		
+		printf("Sign up For a New Account\n");
+		printf("Enter Name: ");
+		rewind(stdin);
+		scanf("%[^\n]", newMember.name);
+
+		for (int i = 0; newMember.name[i]; i++) { //Convert name to uppercase
+			newMember.name[i] = toupper(newMember.name[i]);
+		}
+		
+		rewind(fp);
+		Member temp;
+		while (fread(&temp, sizeof(Member), 1, fp)) {
+			if (strcmp(temp.name, newMember.name) == 0) {
+				printf("Name already exists. Please enter another name.\n");
+				nameExists = 1;
+				break;
+			}
+		}
+	} while (nameExists);
+
+	printf("Enter Password: ");
+	scanf("%s", newMember.password);
+
+	printf("Enter Gender (M/F): ");
+	scanf(" %c", &newMember.gender);
+	newMember.gender = toupper(newMember.gender);
+	while (newMember.gender != 'M' && newMember.gender != 'F') {
+		printf("Invalid input. Please Enter M or F: ");
+		scanf(" %c", &newMember.gender);
+		newMember.gender = toupper(newMember.gender);
+	}
+
+	int valid;
+	do {
+		printf("Enter IC number (XXXXXX-XX-XXXX): ");
+		scanf("%s", newMember.icNo);
+
+		valid = 1; //Check IC No format
+		if (strlen(newMember.icNo) != 14) {
+			valid = 0;
+		}
+		else if (newMember.icNo[6] != '-' || newMember.icNo[9] != '-') {
+			valid = 0;
+		}
+		else {
+			for (int i = 0; i < 14; i++) {
+				if (i != 6 && i != 9 && !isdigit(newMember.icNo[i])) {
+					valid = 0;
+					break;
+				}
+			}
+		}
+		if (!valid) {
+			printf("Invalid IC No format. Please enter in the format XXXXXX-XX-XXXX\n");
+		}
+	} while (!valid);
+
+	do {
+		printf("Enter Contact Number (01X-XXXXXXX or 01X-XXXXXXXX): ");
+		scanf("%s", newMember.contactNo);
+		
+		valid = 1;
+		if (strlen(newMember.contactNo) < 10 || strlen(newMember.contactNo) > 12) {
+			valid = 0;
+		}
+		else if (newMember.contactNo[0] != '0' || newMember.contactNo[1] != '1') {
+			valid = 0;
+		}
+		else if (newMember.contactNo[3] != '-') {
+			valid = 0;
+		}
+		else {
+			for (int i = 0; i < strlen(newMember.contactNo); i++) {
+				if (i != 3 && !isdigit(newMember.contactNo[i])) {
+					valid = 0;
+					break;
+				}
+			}
+		} 
+		if (!valid){
+			printf("Invalid Contact No format. Please enter in the format 01X-XXXXXXX or 01X-XXXXXXXX.\n");
+		}
+	} while (!valid);
+
+	//Generate Member ID
+	fseek(fp, 0, SEEK_END); //Move the file pointer to EOF
+	int numMembers = ftell(fp) / sizeof(Member); //Calculate No of members by dividing the current position of the file pointer by the size of each Member structure
+	sprintf(newMember.memberID, "M%04d", numMembers + 1); //Generate with format "MXXX", Increment number of members by 1 to ensure a unique ID for each new member
+
+	fwrite(&newMember, sizeof(Member), 1, fp);
+	printf("Member Registered Successful.\n");
+	printf("Your Member ID is: %s\n", newMember.memberID);
+	printf("Please Remember Your Member ID For Future Login.\n");
+	printf("Done");
+
+	fclose(fp);
+}
+
+int loginMember(char* enteredMemberID, char* enteredPassword) {
+	FILE* file = fopen("members.bin", "rb");
+	if (file == NULL) {
+		printf("Error opening file. \n");
+		return 0;
+	}
+
+	Member temp;
+	while (fread(&temp, sizeof(Member), 1, file)) {
+		if (strcmp(temp.memberID, enteredMemberID) == 0 && strcmp(temp.password, enteredPassword) == 0) {
+			fclose(file);
+			return 1; // Login successful
+		}
+	}
+
+	fclose(file);
+	return 0; // Login unsuccessful
+}
+
+void login() {
+	char enteredMemberID[20];
+	char enteredPassword[20];
+	int loginChance = 0;
+	int maxLoginChances = 3;
+
+	do {
+		printf("\n=== Member Login ===\n");
+		printf("Enter Member ID: ");
+		scanf("%s", enteredMemberID);
+		printf("Enter Password: ");
+		scanf("%s", enteredPassword);
+
+		int result = loginMember(enteredMemberID, enteredPassword);
+
+		if (result == 1) {
+			printf("Login successful!\n");
+			break;
+		}
+		else if (loginChance < maxLoginChances - 1 ) {
+			printf("Invalid Member ID or Password. Please try again.\n");
+			printf("You have %d %s left.\n", maxLoginChances - loginChance - 1, maxLoginChances - loginChance == 2 ? "chance" : "chances");
+		}
+		else {
+			printf("Invalid Member ID or Paswword.\n");
+			printf("You have exceeded the maximum number of login chances.\n");
+			printf("Would you like to recover your password? (Y/N): ");
+			
+			char recover;
+			scanf(" %c", &recover);
+			if (toupper(recover) == 'Y') {
+				//Password recovery function
+			}
+			else {
+				printf("Returning to main menu.\n");
+				break;
+			}
+		}
+		loginChance++;
+	} while (loginChance < maxLoginChances);
+}
+
+void memberMenu() {
+	int choice;
+	int loggedIn;
+
+	login();
+	loggedIn = 1;
+
+	do {
+		/*if (!loggedIn) {
+			printf("Please login to your account!\n");
+			login();
+			if (!loggedIn) {
+				continue;
+			}
+		}*/ 
+
+		printf("\n=== Member Menu ===\n");
+		printf("1. Search\n");
+		printf("2. Modify\n");
+		printf("3. Delete\n");
+		printf("4. Logout and Exit\n");
+		printf("Enter your choice: ");
+		rewind(stdin);
+		scanf("%d", &choice);
+
+		switch (choice) {
+		case 1:
+			printf("Search function");
+			break;
+		case 2:
+			printf("Modify function\n");
+			break;
+		case 3:
+			printf("Delete function\n");
+			break;
+		case 4:
+			printf("You Have Successfully Looged Out and Exit Member Menu. Have A Nice Day ^_^\n");
+			return;
+		default:
+			printf("Invalid choice. Please enter a number between 1 to 4.\n");
+			break;
+		}
+	} while (choice != 4);
+}
+
+
+/*void memberMenu() {
+	int choice;
+
+	do {
+		printf("\n=== Member Menu ===\n");
+		printf("1. Login\n");
+		printf("2. Exit\n");
+		printf("Enter your choice: ");
+		rewind(stdin);
+		scanf("%d", &choice);
+
+		switch (choice) {
+		case 1:
+			login();
+			break;
+		case 2:
+			printf("Exiting Member Menu.\n");
+			break;
+		default:
+			printf("Invalid choice. Please try again.\n");
+			break;
+		}
+	} while (choice != 2);
+}*/
+
+void main() {
+	//nonMemberMenu();
+	memberMenu();
+}
+
+/*int main() {
 	int choice;
 
 	do {
@@ -42,146 +293,12 @@ int main() {
 			break;
 		case 4:
 			printf("\nYou Have Successfully Exit This Module. Have A Nice Day ^_^\n");
-			exit(0); // Successfully terminated
-		default:
-			printf("Invalid Choice! Please Choose Again\n");
-			main();
+			break;
+		default :
+			printf("Invalid choice. Please try agian.\n");
 			break;
 		}
-	} while (choice < 1 || choice > 4); //It will continue to loop until user choose a valid choice
+	} while (choice != 4);
 
 	return 0;
-}
-
-void staffMenu() {
-	//staffmenu
-}
-
-void memberMenu() {
-	//Member menu
-	system("cls");
-}
-
-void nonMemberMenu() {
-	Member newMember, tempMember;
-	FILE *fp;
-	int usernameExists = 0;
-	char existingUsername[MAX_NAME_LENGTH]; // To store the existing username 
-
-	fp = fopen("members2.dat", "rb");
-	if (fp == NULL) {
-		printf("Can't open file to read.\n");
-		exit(1);
-	}
-
-
-	system("cls");
-	printf("\nSign Up For A New Account\n");
-
-	printf("Enter Your Name: "); //Read member from file and compare name
-	scanf("%[\n]", newMember.name);
-	rewind(stdin);
-
-	while (fread(&tempMember, sizeof(Member), 1, fp) == 1) {
-		if (strcmp(tempMember.name, newMember.name) == 0) {
-			usernameExists = 1;
-			strcpy(existingUsername, tempMember.name); //To store existing username
-			break;
-		}
-	}
-
-	fclose(fp);
-
-	while (usernameExists) { //Tell user to enter new name
-		printf("Username '%s' already exists. Please choose a different username.\n", existingUsername);
-		printf("Enter Your Name : ");
-		scanf("%[^\n]", newMember.name);
-		rewind(stdin);
-
-		fp = fopen("members2.dat", "rb"); // Check if the new username exists in the file
-		usernameExists = 0;
-		while (fread(&tempMember, sizeof(Member), 1, fp) == 1) {
-			if (strcmp(tempMember.name, newMember.name) == 0) {
-				usernameExists = 1;
-				strcpy(existingUsername, tempMember.name); // Update the existing username 
-				break;
-			}
-		}
-		fclose(fp);
-	}
-
-
-	printf("Enter Your Password: ");
-	scanf("%[\n]", newMember.password);
-	rewind(stdin);
-
-	do { // Loop until user enter the correct alphabet M/F
-		printf("Enter Your Gender (M/F): ");
-		scanf("%c", &newMember.gender);
-		newMember.gender = toupper(newMember.gender); // If user type m/f it will become uppercase
-
-		if (newMember.gender != 'M' && newMember.gender != 'F') {
-			printf("Invalid input! Please enter either 'M' or 'F'. \n");
-		}
-	} while (newMember.gender != 'M' && newMember.gender != 'F');
-
-	printf("Enter Your IC Number (XXXXXX-XX-XXXX): ");
-	scanf("%[\n]", newMember.IC);
-	rewind(stdin);
-	printf("Enter Your Contact Number: ");
-	scanf("%[\n]", newMember.contactNo);
-	rewind(stdin);
-
-	static int memberCount = 1;
-	//static means that the variable memberCount can keeps its value even after this function finish execute.
-	// The value of memberCount will remain unchanged between function calls.
-
-	sprintf(newMember.memberID, "M%04d", memberCount++); // Auto generate member ID
-	//sprintf uses to format string based on format specifier and values.
-	// sprintf works similar like printf but instead of printing formatted string to output, it stores the formatted string into character array (newMember.memberID)
-
-	printf("Your Member ID is: %s\n", newMember.memberID);
-	printf("Please Remember Your Member ID For Future Login.\n");
-
-	fp = fopen("members2.dat", "ab");
-
-	if (fp == NULL) {
-		printf("Can't write data into file.\n");
-		exit(1);
-	}
-
-	fwrite(&newMember, sizeof(Member), 1, fp);
-	fclose(fp);
-
-	printf("\nSign Up Successful!\n");
-	printf("Please login as a member to continue.\n");
-	/*memberMenu();// Go to memberMenu() to login*/
-
-	
-}
-
-/*int usernameExists(const char* username) {
-	//const is data pointed to username is constant, cannot modified within the function
-	//means that ensure this function won't change the username
-	//char* indicates username is a character array, username as string
-	//username name of the variable to hold username
-
-	FILE* fp;
-	Member tempMember; //temporary member structure to store member read from file
-
-	fp = fopen("members2.dat", "rb");
-	if (fp == NULL) {
-		printf("\nPlease Continue To Enter Other Information.\n");
-		return 0;//This will assume that username not existed
-	}
-
-	while (fread(&tempMember, sizeof(Member), 1, fp) == 1) {
-		if (strcmp(tempMember.name, username) == 0) {
-			fclose(fp);
-			return 1; //To check whether the username is existed or not
-		}
-	}
-
-	fclose(fp);
-	return 0; //Username does not exist continue to enter other information
 }*/
