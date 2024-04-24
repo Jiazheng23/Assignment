@@ -234,7 +234,7 @@ void bookTicket() {
 	fclose(insertBooking);
 }
 
-//SEARCH BOOKING ID
+//SEARCH FOR BOOKING ID 
 void checkTicketStatus() {
 	typedef struct {
 		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
@@ -296,6 +296,7 @@ void checkTicketStatus() {
 	fclose(readTicketPT);
 }
 
+//EDIT BOOKING ID
 void editBooking() {
 	typedef struct {
 		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
@@ -393,6 +394,7 @@ void editBooking() {
 	fclose(editTicket);
 }
 
+//DELETE BOOKING ID
 void cancelBooking() {
 	typedef struct {
 		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
@@ -485,6 +487,8 @@ void cancelBooking() {
 		printf("Delete cancelled, bye!\n");
 	}
 }
+
+//DISPLAY ALL BOOKINGS
 void displayBookedTickets() {
 	typedef struct {
 		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
@@ -524,8 +528,50 @@ void displayBookedTickets() {
 	}
 	fclose(readTicketPT);
 }
-void report() {
 
+//DISPLAY TOTAL BOOKED TICKET
+void report() {
+	typedef struct {
+		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
+		int trainNo, seatNo, quantity, day, month, year, hour, minute;
+		double payment;
+	}TrainTicket;
+	TrainTicket ticket[100];
+
+	FILE* readTicketPT;
+
+	//OPEN Bookings.txt for reading
+	readTicketPT = fopen("Bookings.txt", "r");
+
+	if (readTicketPT != NULL) {
+		//RECORDS the amount of rows in file and their values
+		int record = 0;
+		while (!feof(readTicketPT)) {
+			fscanf(readTicketPT, "%[^|]|%[^|]|%d-%d-%d|%[^|]|%[^|]|%[^|]|T%d|%c|%d|%lf\n", ticket[record].bookingID, ticket[record].memberID,
+				&ticket[record].day, &ticket[record].month, &ticket[record].year, ticket[record].departDate, ticket[record].departStation, ticket[record].arriveStation,
+				&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
+			record++;
+		};
+
+		int sysDay, sysMonth, sysYear;
+		system("cls");
+		displayTicketHeading();
+		getCurrentTime(&sysDay, &sysMonth, &sysYear);
+		printf("\n");
+		printf("%-12s %-12s %-15s %-15s %-20s %-20s %-9s %-9s %-8s\n", "Booking ID", "Member ID", "Departure Date", "Arrival Date", "Departure Station", "Destination", "Train ID", "Coach ID", "Seat No");
+		printf("%-12s %-12s %-15s %-15s %-20s %-20s %-9s %-9s %-8s\n", "----------", "---------", "--------------", "------------", "-----------------", "-----------", "--------", "--------", "-------");
+		for (int i = 0; i < record; i++) {
+			if ((ticket[i].day == sysDay) && (ticket[i].month == sysMonth) && (ticket[i].year == sysYear)) {
+				printf("%s\t\t%s\t\t%02d-%02d-%d\t%s\t%-14s\t\t%-14s\t\tT%d\t\t%c\t\t%d\n", ticket[i].bookingID, ticket[i].memberID,
+					ticket[i].day, ticket[i].month, ticket[i].year, ticket[i].departDate, ticket[i].departStation, ticket[i].arriveStation,
+					ticket[i].trainNo, ticket[i].coach, ticket[i].seatNo);
+			}
+		}
+	}
+	else {
+		printf("File not found, system gg.\n");
+	}
+	fclose(readTicketPT);
 }
 
 void getBookingID(char bookingID[6], int warning) {
