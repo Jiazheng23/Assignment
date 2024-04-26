@@ -7,9 +7,9 @@
 
 
 typedef struct {
-	char trainType[3];
-	int day, month, year, trainID, arrivalTime, availableSeat;
-	char departureStt[20], ArrivalStt[20];
+	int  availableSeat;
+	char departureT[20], Arrivalt[20], date[10], destination[20];
+	double price;
 }SchedulingModel;
 
 typedef struct {
@@ -23,12 +23,16 @@ typedef struct {
 }MemberModel;
 
 
+
 AdminstratorModel StaffModel;
 
 void RecoveryPass();
 void displayStaffInfo();
 void deleteStaffInfo();
 void searchStaffInfo();
+void addSchedule();
+void disBooking();
+void editSchedule();
 
 void mainMenu() {
 	system("cls");
@@ -71,12 +75,15 @@ void StaffMenu1() {
 	system("cls");
 
 	int staffOption1;
-	printf("Successful Login\n");
+	printf("\t\tSuccessful Login		\n");
 	printf("1.Display Staff Infomation  \n");
 	printf("2.Search Staff              \n");
 	printf("3.Delete Staff              \n");
-	printf("4.Go back menu              \n");
-	printf("5.Exit                      \n");
+	printf("4.Edit Schedule				\n");
+	printf("5.Add Schedule              \n");
+	printf("6.Display Booking			\n");
+	printf("7.Go back menu              \n");
+	printf("8.Exit                      \n");
 
 	printf("Enter Your Option :");
 	scanf("%d", &staffOption1);
@@ -92,12 +99,18 @@ void StaffMenu1() {
 	case 3:deleteStaffInfo();
 		break;
 		//go back menu
-	case 4:main();
+	case 4:editSchedule();
 		break;
 		//exit
-	case 5:exit(0);
+	case 5:addSchedule();
 		break;
-		//error
+	case 6:disBooking();
+		break;
+	case 7:main();;
+		break;
+	case 8:exit(-1);
+		break;
+	//error
 	default:error();
 	}
 }
@@ -593,6 +606,49 @@ int addStaffInfo() {
 		error();
 	}
 	fclose(staffBinary);
+}
+
+void addSchedule() {
+
+	/*char depTime,arrivalTime,destination,date;
+	double ticketPrice;
+	int avalSeat;*/
+	SchedulingModel Schedule;
+
+	FILE * addSchedule;
+
+	addSchedule = fopen("schedule.txt","a");
+
+	printf("Enter Date           :");
+	scanf("%s",&Schedule.date);
+
+	printf("Enter Departure Time :");
+	scanf("%s",&Schedule.departureT);
+
+	printf("Enter Arrival Time   :");
+	scanf("%s",&Schedule.Arrivalt);
+	
+	printf("Enter Destination    :");
+	scanf("%s", &Schedule.destination);
+
+	printf("Enter Ticket Price   :");
+	scanf("%lf", &Schedule.price);
+
+	printf("Enter Avalable Seat  :");
+	scanf("%d", &Schedule.availableSeat);
+
+	
+	fprintf(addSchedule,"%s | %s | %s | %s | %lf | %d \n", Schedule.date,Schedule.departureT, Schedule.Arrivalt, Schedule.destination, Schedule.price, Schedule.availableSeat);
+
+	fclose(addSchedule);
+}
+
+void disBooking() {
+
+}
+
+void editSchedule() {
+
 }
 
 int main() {
