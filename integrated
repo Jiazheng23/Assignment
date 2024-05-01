@@ -1,0 +1,1941 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
+#include <time.h>
+#include <Windows.h>
+#pragma warning (disable:4996)
+
+typedef struct {
+	int  availableSeat;
+	char departureT[20], Arrivalt[20], date[10], destination[20];
+	double price;
+}SchedulingModel;
+
+typedef struct {
+	char staffId[7],staffName[20],staffIc[14],staffPass[20];
+	char position[7];
+}AdminstratorModel;
+
+typedef struct {
+	char name[50], password[20], passwordRecovery[50],
+		gender, icNo[15], contactNo[15], memberID[6];
+}Member;
+
+//Staff Modele Function
+void RecoveryPass();
+void displayStaffInfo();
+void deleteStaffInfo();
+void searchStaffInfo();
+
+//Schedule Modele Cuntion
+void addSchedule();
+void disBooking();
+void editSchedule();
+
+
+//Member Modele Function
+void memberMenu();
+void nonMemberMenu();
+void login();
+
+
+//Booking Modele
+//main functions
+void bookTicket();
+void checkTicketStatus();
+void editBooking();
+void cancelBooking();
+void displayBookedTickets();
+void report();
+//functions to display heading
+void bookingMain();
+void bookTicketHeading();
+void searchTicketHeading();
+void editTicketHeading();
+void deleteTicketHeading();
+void stations();
+void displayCoach();
+//input function
+void getBookingID(char bookingID[6], int warning);
+void getMemberID(char memberID[6], int warning);
+void getDepartDate(int* day, int* month, int* year, int sysyear, int warning);
+void getCurrentTime(int* sysday, int* sysmonth, int* sysyear);
+void getStation(char departStation[40], char arriveStation[40], int warning);
+void getQuantity(int* quantity, int warning);
+char getCoach(int warning);
+void getSeatNo(int* seatNo, int noOfSeat, int warning);
+void payment(int quantity);
+
+
+void mainMenu() {
+	system("cls");
+	printf("Welcome to the balalalala Train !!\n");
+	printf("Select the Mode                   \n");
+	printf("1.Staff Mode                      \n");
+	printf("2.Member Mode                     \n");
+	printf("3.Non-Member                      \n");
+	//printf("4.Train Schedule                  \n");
+	//printf("5.Ticket Booking                  \n");
+	printf("4.Exit                            \n");
+}
+
+void staffMode() {
+	system("cls");
+	printf("Staff Mode     \n");
+	printf("1.login  staff \n");
+	printf("2.create staff \n");
+	printf("3.go back menu \n");
+	printf("4.exit         \n");
+
+
+	int staffOption;
+
+	printf("Enter Your Option :");
+	scanf("%d", &staffOption);
+
+	switch (staffOption) {
+		case 1: {//login member
+			loginStaff();
+			break;
+		}
+		case 2: { //create new staff
+			addStaffInfo();
+			break;
+		}
+		case 3:system("cls");
+			main();
+			break;
+		case 4:exit(0);
+		default:
+			error();
+	}
+}
+
+void error() {
+	system("cls");
+	int error;
+	printf("invalid input please try again             \n");
+	printf("1.Go back main menu \n");
+	printf("2.Exit the program \n");
+	
+
+	 do{
+		printf("Enter Your option:");
+		scanf("%d",&error);
+		
+			if (error == 1) {
+				main();
+				break;
+			}
+			else if (error == 2)
+			{
+				printf("See You!");
+				exit(-1);
+				break;
+			}
+			else {
+				printf("Invalid Input!\n");
+			}
+	 }while(error != 1 && error != 2);
+
+}
+
+void StaffMenu1() {
+	system("cls");
+
+	int staffOption1;
+	printf("\t\tSuccessful Login		\n");
+	printf("1.Display Staff Infomation  \n");
+	printf("2.Search Staff              \n");
+	printf("3.Delete Staff              \n");
+	printf("4.Edit Schedule				\n");
+	printf("5.Add Schedule              \n");
+	printf("6.Display Booking			\n");
+	printf("7.Display Booked Tickets    \n");
+	printf("8.Go back menu              \n");
+	printf("9.Exit                      \n");
+
+	printf("Enter Your Option :");
+	scanf("%d", &staffOption1);
+
+	switch (staffOption1) {
+		//display staff info
+	case 1:displayStaffInfo();
+		break;
+		//search staff
+	case 2:searchStaffInfo();
+		break;
+		//delete staff	
+	case 3:deleteStaffInfo();
+		break;
+		//go back menu
+	case 4:editSchedule();
+		break;
+		//exit
+	case 5:addSchedule();
+		break;
+	case 6:disBooking();
+		break;
+	case 7:displayBookedTickets();
+		break;
+	case 8:main();
+		break;
+	case 9:exit(-1);
+		break;
+	//error
+	default:error();
+	}
+}
+
+void StaffMenu() {
+	int option3;
+	printf("1.Edit Schedule   \n");
+	printf("2.Display Booking \n");
+	printf("3.Report		  \n");
+	printf("4.Go to back menu \n");
+	printf("5.Exit            \n");
+
+	printf("Enter your option :\n");
+	scanf("%d", &option3);
+
+	switch (option3) {
+		//Edit Schedule Function
+	case 1: break;
+		//Display Booking
+	case 2:break;
+		//Report
+	case 3:break;
+		//Go back menu
+	case 4:main();
+		break;
+		//Exit
+	case 5:exit(1);
+		break;
+		//error
+	default:error();
+	}
+}
+
+void loginStaff() {
+	int memberOption, errorOption, found = -1,wrong = 3;
+	char enter,wrongOpiton;
+	char staffPass[20], staffId[20];
+
+
+	printf("Enter Your Staff ID :");
+	scanf("%s", staffId);
+
+	AdminstratorModel StaffModel[50];
+	FILE* readStaffBinary;
+	readStaffBinary = fopen("binary.bin", "rb");
+
+	if (readStaffBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	int count = 0;
+
+	//count the staffmodel array
+	while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readStaffBinary)) {
+		count++;
+	}
+	fclose(readStaffBinary);
+	int totalStaff = 0;
+
+	totalStaff = count;
+
+	//Search StaffId
+	for (int i = 0; i < totalStaff; i++) {
+		if (strcmp(StaffModel[i].staffId, staffId) == 0) {
+			found = i;		
+		}
+	}
+	if (found == -1) {
+		printf("Can not found the Staff ID\n");
+	}
+
+	do{
+		printf("Enter Your Staff Password :");
+		scanf("%s", staffPass);
+		if(strcmp(StaffModel[found].staffPass,"XXX") == 0) {
+			printf("The Staff already deleted");
+		}	
+		else if (strcmp(StaffModel[found].staffPass, staffPass) == 1) {
+			wrong--;
+		}
+	
+		if(wrong != 0)
+		{
+			printf("Please check your ID and Passwords are correct!\n");
+			printf("You still have %d more changes to input right passwords\n",wrong);
+		}
+		else if (wrong == 0) {
+	
+			rewind(stdin);
+			printf("Do you need to recovery Password?(Y/N) :");
+			scanf("%c", &wrongOpiton);
+			
+			
+			wrongOpiton = toupper(wrongOpiton);
+
+			if (wrongOpiton == 'Y') {
+				RecoveryPass();
+			}
+			else if (wrongOpiton == 'N') {
+				system("cls");
+				main();
+			}
+			else {
+				error();
+			}
+		}
+
+	}while(strcmp(StaffModel[found].staffPass, staffPass) != 0 || wrong == 0);
+ 
+	
+	if (strcmp(StaffModel[found].staffPass, staffPass) == 0) {
+		StaffMenu1();
+	}
+}
+
+
+void deleteStaffInfo() {
+	int found = -1;
+	char staffPass[20], staffId[20], option1,staffName[20];
+	char again,confirm;
+	
+	AdminstratorModel StaffModel[50];
+	FILE* readStaffBinary;
+	readStaffBinary = fopen("binary.bin", "rb");
+	
+	if (readStaffBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	int count = 0;
+	//count the staffmodel array
+	rewind(stdin);
+	while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readStaffBinary)) {
+			count++;
+		}
+	fclose(readStaffBinary);
+
+
+	int totalStaff = 0;
+		totalStaff = count;
+	printf("Enter Your Staff ID :");
+	scanf("%s", staffId);
+
+	printf("===============================================================================================\n");
+	printf(" Staff ID \t\t Staff Name \t\t Staff Passwords \t\t Staff Position \t\t\n");
+
+	for (int i = 0; i < totalStaff; i++) {
+		if (strcmp(StaffModel[i].staffId, staffId ) == 0) {
+			found = i;
+			printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc, StaffModel[i].staffPass, StaffModel[i].position);
+		}
+	}
+	printf("===============================================================================================\n");
+	
+
+
+	if (found == -1) {
+		printf("Not Found the Staff Information\n");
+		printf("Do you want to try again?(Y/N)\n");
+		scanf("%c",&again);
+		if (toupper(again) == 'Y') {
+			deleteStaffInfo();
+		}
+		else {
+			main();
+		}
+	}else {
+		rewind(stdin);
+		printf("Are you sure u want to delete this Staff Information?(Y/N)");
+		scanf("%c",&confirm);
+
+		if(toupper(confirm) == 'Y'){
+			strcpy(StaffModel[found].staffName, "XXXX");
+			strcpy(StaffModel[found].staffPass, "XXXX");
+			strcpy(StaffModel[found].position,	"XXXX");
+			printf("The Staff infomation are deleted");
+		}
+		else {
+			printf("Nobody will be deleted");
+			main();
+		}
+	}
+	FILE* writeBinary;
+
+	writeBinary = fopen("binary.bin", "wb");
+
+	if (writeBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	for (int i = 0; i < totalStaff; i++) {
+		fwrite(&StaffModel[i], sizeof(AdminstratorModel), 1, writeBinary);
+	}
+	fclose(writeBinary);
+}
+
+void searchStaffInfo() {
+	int found = -1;
+	char staffPass[20], staffId[20],option1,again,deleted = 0,again1;
+	printf("Enter Your Staff ID :");
+	scanf("%s", staffId);
+
+	AdminstratorModel StaffModel[50];
+	FILE* readStaffBinary;
+	readStaffBinary = fopen("binary.bin", "rb");
+
+
+	if (readStaffBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	int count = 0;
+	//count the staffmodel array
+	while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readStaffBinary)) {
+		count++;
+	}
+
+	int totalStaff = count;
+	printf("===============================================================================================\n");
+	printf(" Staff ID \t\t Staff Name \t\t Staff Passwords \t\t Staff Position \t\t\n");
+
+	for (int i = 0; i < totalStaff; i++) {
+			if (strcmp(StaffModel[i].staffId, staffId) == 0) {
+				found = i;
+				if (strcmp(StaffModel[i].staffName, "XXX") != 0) {
+					printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
+				}
+				else {
+					printf(" %s\t\t\t %s\t\t\t  %s\t\t\t %s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
+					deleted++;
+				}
+			}
+	}
+	printf("===============================================================================================\n");
+		if (deleted != 0) {
+			printf("The Staff already deleted");
+			printf("Do you want to search another Staff?(Y/N)");
+			scanf("%c",&again1);
+			again1 = toupper(again1);
+
+			if (again1 == 'Y') {
+				searchStaffInfo();
+			}
+			else if (again1 == 'N') {
+				exit(-1);
+			}
+			else {
+				error();
+			}
+		}	
+
+		if (found == -1) {
+			printf("Not Found the Staff Information\n");
+			printf("Do you want to try again?(Y/N)\n");
+			scanf("%c",&again);
+			if(toupper(again) == 'Y'){
+				searchStaffInfo();
+			}
+			else{
+				main();
+			}
+	}
+}
+
+
+
+void displayStaffInfo() {
+	AdminstratorModel StaffModel;
+
+	FILE* readStaffBinary;
+	readStaffBinary = fopen("binary.bin", "rb");
+
+	if (readStaffBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	int count = 0 , deleted = 0;
+	char option;
+	//read the data from file and print out
+	printf("===============================================================================================\n");
+	printf(" Staff ID \t\t Staff Name \t\t Staff IC \t\t\t Staff Passwords \t\t\t Staff Position \t\t\n");
+	while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
+		if (strcmp(StaffModel.staffName, "XXX") != 1) {
+			printf(" %s\t\t\t %s\t\t\t %s \t\t\t  %s\t\t\t\t %s\t\t\t\n", StaffModel.staffId, StaffModel.staffName,StaffModel.staffIc, StaffModel.staffPass, StaffModel.position);
+		}
+		else {
+			deleted++;
+			
+		}
+	}
+	printf("===============================================================================================\n");
+
+	printf("%d Staff already deleted",deleted);
+	printf("Do you want go back main menu?(Y/N)");
+	scanf("%c",&option);
+	option = toupper(option);
+
+	if (option == "Y") {
+		system("cls");
+		main();
+	}
+	else if (option == 'N') {
+		exit(-1);
+	}
+	else {
+		error();
+	}
+
+
+	fclose(readStaffBinary);
+}
+
+
+void RecoveryPass() {
+	AdminstratorModel StaffModel[30];
+	AdminstratorModel input;
+	char found = -1,doublePass;
+	int totalStaff;
+
+	rewind(stdin);
+	printf("Enter Your Staff ID :");
+	scanf("%[^\n]",input.staffId);
+	printf("Enter Your IC number :");
+	scanf("%s",input.staffIc);
+
+
+	FILE* readStaffBinary;
+	readStaffBinary = fopen("binary.bin", "rb");
+
+	if (readStaffBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;}
+	int count = 0;
+	//count how many staffmodel 
+	while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
+		count++;
+	}
+	
+	fclose(readStaffBinary);
+
+	totalStaff = count;
+	//search the data
+	for (int i = 0; i < totalStaff; i++) {
+		if (strcmp(StaffModel[i].staffId, input.staffId) == 0) {
+			if(strcmp(StaffModel[i].staffIc, input.staffIc) == 0){
+				found = i;
+				break;
+			}
+		}
+	}
+	
+	if (found == -1) {
+		printf("Not Found");
+	}
+	else {
+		printf("Enter Your New Passwords:");
+		rewind(stdin);
+		scanf("%[^\n]",&StaffModel[found].staffPass);
+		printf("Double confirm your Passwords");
+		scanf("%[^\n]",&doublePass);
+		
+		//confirm the password for the user
+		if (StaffModel[found].staffPass != doublePass) {
+			printf("\t\tPlease Try again");
+			RecoveryPass();
+		}
+		else {
+			printf("Successful Change Your Passwords");
+			printf("Please remember your Passwords");
+			main();
+		}
+	
+	
+		
+		FILE * writeNewPass;
+
+		//write the new passwords into the file
+		writeNewPass = fopen("binary.bin","wb");
+		for (int i = 0; i < totalStaff; i++) {
+			fwrite(&StaffModel[i],sizeof(AdminstratorModel),1,writeNewPass);
+		}
+		
+
+		fclose(writeNewPass);
+	}
+}
+
+int countStaffNumber(int* totalStaff) {
+	FILE* readBinary;
+
+
+	AdminstratorModel StaffModel[100];
+
+	readBinary = fopen("binary.bin", "rb");
+
+	if (readBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	int count = 0;
+	//count the staffmodel array
+	while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readBinary)) {
+		count++;
+	}
+
+	*totalStaff = count;
+
+	fclose(readBinary);
+}
+
+int addStaffInfo() {
+
+	system("cls");
+
+	AdminstratorModel StaffModel;
+	int valid=0;
+
+	int staID, succOption,total;
+	
+	FILE* staffBinary;
+	
+
+
+	staffBinary = fopen("binary.bin", "ab");
+	
+
+	if (staffBinary == NULL) {
+		printf("Can't Open the file Binary.dat!");
+		exit(-1);
+	}
+
+	
+	//Staff Input
+	printf("Hi,Welcome to our Big Family!!\n");
+	printf("This Is Your Staff ID :");
+	countStaffNumber(&total);
+	total += 1;
+	printf("ST %04d",total);
+
+	sprintf(StaffModel.staffId,"ST%04d",total);
+
+	printf("\nEnter your Name	   :");
+	rewind(stdin);
+	scanf("%[^\n]", StaffModel.staffName);
+
+	int valid1 = 1;
+	do {
+		printf("Enter IC number (XXXXXX-XX-XXXX): ");
+		scanf("%s", StaffModel.staffIc);
+
+		valid = 1; //Check IC No format
+		if (strlen(StaffModel.staffIc) != 14) {
+			valid1 = 0;
+		}
+		else if (StaffModel.staffIc[6] != '-' || StaffModel.staffIc[9] != '-') {
+			valid1 = 0;
+		}
+		else {
+			for (int i = 0; i < 14; i++) {
+				if (i != 6 && i != 9 && !isdigit(StaffModel.staffIc[i])) {
+					valid1 = 0;
+					break;
+				}
+			}
+		}
+		if (!valid1) {
+			printf("Invalid IC No format. Please enter in the format XXXXXX-XX-XXXX\n");
+		}
+	} while (!valid1);
+	
+
+	printf("\nEnter Your Password  :");
+	rewind(stdin);
+	scanf("%[^\n]", StaffModel.staffPass);
+
+
+	printf("\nEnter Your Position (Boss/Staff):");
+	rewind(stdin);
+	scanf("%s", StaffModel.position);
+	
+	if (strcmp(StaffModel.position,"Staff") || strcmp(StaffModel.position, "Boss")) {
+		fwrite(&StaffModel, sizeof(AdminstratorModel), 1, staffBinary);
+		printf("\nSuccessful Create New Staff! ");
+
+		printf("\n1.Go Back Main Menu.");
+		printf("\n2.Exit ");
+		scanf("%d", &succOption);
+
+		if (succOption == 1) {
+			main();
+		}
+		else if (succOption == 2) {
+			exit(-1);
+		}while (succOption != 1 || succOption != 2);
+	}
+	else {
+		error();
+	}
+	fclose(staffBinary);
+}
+
+
+void nonMemberMenu() {
+	FILE* fp;
+	fp = fopen("members.bin", "ab+");
+
+	if (fp == NULL) {
+		printf("Error opening file. \n");
+		exit(-1);
+	}
+
+	Member newMember;
+	int nameExists;
+
+	do {
+		nameExists = 0;
+
+		printf("Sign up For a New Account\n");
+		printf("Enter Name: ");
+		rewind(stdin);
+		scanf("%[^\n]", newMember.name);
+
+		for (int i = 0; newMember.name[i]; i++) { //Convert name to uppercase
+			newMember.name[i] = toupper(newMember.name[i]);
+		}
+
+		rewind(fp);
+		Member temp;
+		while (fread(&temp, sizeof(Member), 1, fp)) {
+			if (strcmp(temp.name, newMember.name) == 0) {
+				printf("Name already exists. Please enter another name.\n");
+				nameExists = 1;
+				break;
+			}
+		}
+	} while (nameExists);
+
+	printf("Enter Password: ");
+	scanf("%s", newMember.password);
+
+	printf("Enter Gender (M/F): ");
+	scanf(" %c", &newMember.gender);
+	newMember.gender = toupper(newMember.gender);
+	while (newMember.gender != 'M' && newMember.gender != 'F') {
+		printf("Invalid input. Please Enter M or F: ");
+		scanf(" %c", &newMember.gender);
+		newMember.gender = toupper(newMember.gender);
+	}
+
+	int valid;
+	do {
+		printf("Enter IC number (XXXXXX-XX-XXXX): ");
+		scanf("%s", newMember.icNo);
+
+		valid = 1; //Check IC No format
+		if (strlen(newMember.icNo) != 14) {
+			valid = 0;
+		}
+		else if (newMember.icNo[6] != '-' || newMember.icNo[9] != '-') {
+			valid = 0;
+		}
+		else {
+			for (int i = 0; i < 14; i++) {
+				if (i != 6 && i != 9 && !isdigit(newMember.icNo[i])) {
+					valid = 0;
+					break;
+				}
+			}
+		}
+		if (!valid) {
+			printf("Invalid IC No format. Please enter in the format XXXXXX-XX-XXXX\n");
+		}
+	} while (!valid);
+
+	do {
+		printf("Enter Contact Number (01X-XXXXXXX or 01X-XXXXXXXX): ");
+		scanf("%s", newMember.contactNo);
+
+		valid = 1;
+		if (strlen(newMember.contactNo) < 10 || strlen(newMember.contactNo) > 12) {
+			valid = 0;
+		}
+		else if (newMember.contactNo[0] != '0' || newMember.contactNo[1] != '1') {
+			valid = 0;
+		}
+		else if (newMember.contactNo[3] != '-') {
+			valid = 0;
+		}
+		else {
+			for (int i = 0; i < strlen(newMember.contactNo); i++) {
+				if (i != 3 && !isdigit(newMember.contactNo[i])) {
+					valid = 0;
+					break;
+				}
+			}
+		}
+		if (!valid) {
+			printf("Invalid Contact No format. Please enter in the format 01X-XXXXXXX or 01X-XXXXXXXX.\n");
+		}
+	} while (!valid);
+
+	//Generate Member ID
+	fseek(fp, 0, SEEK_END); //Move the file pointer to EOF
+	int numMembers = ftell(fp) / sizeof(Member); //Calculate No of members by dividing the current position of the file pointer by the size of each Member structure
+	sprintf(newMember.memberID, "M%04d", numMembers + 1); //Generate with format "MXXX", Increment number of members by 1 to ensure a unique ID for each new member
+
+	fwrite(&newMember, sizeof(Member), 1, fp);
+	printf("Member Registered Successful.\n");
+	printf("Your Member ID is: %s\n", newMember.memberID);
+	printf("Please Remember Your Member ID For Future Login.\n");
+	printf("Done");
+
+	fclose(fp);
+}
+
+int loginMember(char* enteredMemberID, char* enteredPassword) {
+	FILE* readIDPass = fopen("members.bin", "rb");
+	if (readIDPass == NULL) {
+		printf("Error opening file. \n");
+		return 0;
+	}
+
+	Member temp;
+	while (fread(&temp, sizeof(Member), 1, readIDPass)) {
+		if (strcmp(temp.memberID, enteredMemberID) == 0 && strcmp(temp.password, enteredPassword) == 0) {
+			fclose(readIDPass);
+			return 1; // Login successful
+		}
+	}
+
+	fclose(readIDPass);
+	return 0; // Login unsuccessful
+}
+
+
+int countMembers() { //Count quantity of members
+	FILE* memberQuantity;
+	Member entered;
+	int count = 0;
+
+	memberQuantity = fopen("members.bin", "rb");
+	if (memberQuantity == NULL) {
+		printf("Error opening file!\n");
+		return 0;
+	}
+
+	while (fread(&entered, sizeof(Member), 1, memberQuantity)) {
+		count++;
+	}
+
+	fclose(memberQuantity);
+	return count;
+}
+
+void passwordRecovery() {
+
+	Member fileMember[30];
+	Member input;
+	char confirmPass[20];
+	int found = -1; // Flag to check if member found
+	int totalMembers;
+	char confirm;
+
+	totalMembers = countMembers(); //Count total number of members
+
+	FILE* readMemberFile = fopen("members.bin", "rb"); //Open member file
+	if (readMemberFile == NULL) {
+		printf("Error opening file!\n");
+		return;
+	}
+
+	fread(fileMember, sizeof(Member), totalMembers, readMemberFile); //Read members from the file into array
+	fclose(readMemberFile);
+
+	do {
+		printf("\n == = Password Recovery == = \n");
+		printf("Enter Member ID: ");
+		rewind(stdin);
+		scanf("%s", input.memberID);
+		printf("Enter IC Number (XXXXXX-XX-XXXX): ");
+		rewind(stdin);
+		scanf("%s", input.icNo);
+
+		found = -1;
+
+		for (int i = 0; i < totalMembers; i++) { //Search data of member
+			if (strcmp(fileMember[i].memberID, input.memberID) == 0) {
+				if (strcmp(fileMember[i].icNo, input.icNo) == 0) {
+					found = i; //Member found
+					break;
+				}
+			}
+		}
+
+		if (found == -1) {
+			printf("Member ID and IC No not match\n");
+			printf("Please try again!\n");
+		}
+	} while (found == -1);
+
+	printf("\nEnter new password: ");
+	rewind(stdin);
+	scanf("%[^\n]", fileMember[found].password);
+
+	do {
+		printf("Please double confirm your new password: ");
+		rewind(stdin);
+		scanf("%[^\n]", confirmPass);
+
+		if (strcmp(fileMember[found].password, confirmPass) != 0) {
+			printf("Passwords do not match. Please try again.\n");
+		}
+
+	} while (strcmp(fileMember[found].password, confirmPass) != 0);
+
+	do {
+		printf("Do you really want to change your password? (Y or N): ");
+		rewind(stdin);
+		scanf(" %c", &confirm);
+
+		if (toupper(confirm) == 'Y') {
+			FILE* writePassToFile;
+			writePassToFile = fopen("members.bin", "wb");
+
+			if (writePassToFile == NULL) {
+				printf("Error opening file!\n");
+				return;
+			}
+
+			for (int i = 0; i < totalMembers; i++) {
+				fwrite(&fileMember[i], sizeof(Member), 1, writePassToFile);
+			}
+
+			fclose(writePassToFile);
+			printf("Password changed successfully.\n");
+		}
+
+		else if (toupper(confirm) == 'N') {
+			printf("Password change cancelled.\n");
+			login();
+		}
+
+		else {
+			printf("Invalid input. Please enter 'Y' for yes or 'N' for No.\n");
+		}
+
+	} while (toupper(confirm) != 'Y' && toupper(confirm) != 'N');
+}
+
+void login() {
+	char enteredMemberID[20];
+	char enteredPassword[20];
+	int loginChance = 0;
+	int maxLoginChances = 3;
+
+	do {
+		printf("\n=== Member Login ===\n");
+		printf("Enter Member ID: ");
+		rewind(stdin);
+		scanf("%s", enteredMemberID);
+		printf("Enter Password: ");
+		rewind(stdin);
+		scanf("%[^\n]", enteredPassword);
+
+		int result = loginMember(enteredMemberID, enteredPassword);
+
+		if (result == 1) {
+			printf("Login successful!\n");
+			memberMenu();
+			break;
+		}
+		else if (loginChance < maxLoginChances - 1) {
+			printf("Invalid Member ID or Password. Please try again.\n");
+			printf("You have %d %s left.\n", maxLoginChances - loginChance - 1, maxLoginChances - loginChance == 2 ? "chance" : "chances");
+		}
+		else {
+			printf("Invalid Member ID or Paswword.\n");
+			printf("You have exceeded the maximum number of login chances.\n");
+			printf("Would you like to recover your password? (Enter Y for Yes to continue and any other alphabet/number for Exit): ");
+
+			char recover;
+			scanf(" %c", &recover);
+			if (toupper(recover) == 'Y') {
+				passwordRecovery();
+			}
+			else {
+				printf("Returning to Main Menu\n");
+				break;
+			}
+		}
+		loginChance++;
+	} while (loginChance < maxLoginChances);
+}
+
+void searchMemberInfo() {
+
+	Member fileMember;
+	char enteredID[30];
+	int found = 0;
+	int totalMembers;
+	char continueSearch;
+
+	totalMembers = countMembers();
+
+
+	do {
+		printf("\n === Member Search ===\n");
+		printf("Enter Member ID: ");
+		rewind(stdin);
+		scanf("%s", enteredID);
+
+		FILE* searchMember;
+		searchMember = fopen("members.bin", "rb");
+
+		if (searchMember == NULL) {
+			printf("Error opening file\n");
+			return;
+		}
+
+		for (int i = 0; i < totalMembers; i++) { //Search for entered Member ID 
+			fread(&fileMember, sizeof(Member), 1, searchMember);
+			if (strcmp(fileMember.memberID, enteredID) == 0) {
+				found = 1;
+				break;
+			}
+		}
+		fclose(searchMember);
+
+		if (found) { //Member ID found, display member information
+			printf("\n === Member Information === \n");
+			printf("Member ID      : %s\n", fileMember.memberID);
+			printf("Name           : %s\n", fileMember.name);
+			printf("Password       : %s\n", fileMember.password);
+			printf("Gender         : %c\n", fileMember.gender);
+			printf("IC Number      : %s\n", fileMember.icNo);
+			printf("Contact Number : %s\n", fileMember.contactNo);
+		}
+		else {
+			printf("Member ID '%s' not found. Please try again.\n", enteredID);
+		}
+
+		printf("\nDo you want to continue searching? (Y for yes and any elements for No): ");
+		rewind(stdin);
+		scanf(" %c", &continueSearch);
+
+	} while (toupper(continueSearch) == 'Y');
+}
+
+void modifyMemberInfo() {
+	Member inFileMember[30];
+	char enteredMemID[10];
+	char enteredICNo[15];
+	int found = -1;
+	int totalMems;
+	char continousChoice;
+
+	do {
+		printf("\n === Modify Member Information ===\n");
+		printf("Enter Member ID: ");
+		scanf("%s", enteredMemID);
+		printf("Enter IC Number (XXXXXX-XX-XXXX): ");
+		scanf("%s", enteredICNo);
+
+		totalMems = countMembers();
+
+		FILE* modifiedMember;
+		modifiedMember = fopen("members.bin", "rb+");
+
+		if (modifiedMember == NULL) {
+			printf("Error opening file!\n");
+			return;
+		}
+
+		fread(inFileMember, sizeof(Member), totalMems, modifiedMember); // Read all member records into memory
+
+		for (int i = 0; i < totalMems; i++) {
+			if (strcmp(inFileMember[i].memberID, enteredMemID) == 0 && strcmp(inFileMember[i].icNo, enteredICNo) == 0) {
+				found = i;
+				printf("\n === Existing Member Information ===\n");
+				printf("Member ID      : %s\n", inFileMember[i].memberID);
+				printf("Name           : %s\n", inFileMember[i].name);
+				printf("Password       : %s\n", inFileMember[i].password);
+				printf("Gender         : %c\n", inFileMember[i].gender);
+				printf("IC Number      : %s\n", inFileMember[i].icNo);
+				printf("Contact Number : %s\n", inFileMember[i].contactNo);
+
+				// Prompt user to modify each field
+				printf("\n === Modify Member Information ===\n");
+				printf("Enter New Name: ");
+				scanf("%s", inFileMember[i].name);
+				printf("Enter New Password: ");
+				scanf("%s", inFileMember[i].password);
+				printf("Enter New Gender (M/F): ");
+				scanf(" %c", &inFileMember[i].gender);
+				printf("Enter New IC Number (XXXXXX-XX-XXXX): ");
+				scanf("%s", inFileMember[i].icNo);
+				printf("Enter New Contact Number: ");
+				scanf("%s", inFileMember[i].contactNo);
+
+				printf("\nMember information modified successfully!\n");
+				break; // Exit loop after modifying the record
+			}
+		}
+
+		if (found == -1) {
+			printf("Member ID and IC Number not found. Do you want to continue trying? (Y for Yes and any other elements for No): \n");
+			rewind(stdin);
+			scanf(" %c", &continousChoice);
+		}
+
+		// Write the modified member records back to the file
+		rewind(modifiedMember);
+		fwrite(inFileMember, sizeof(Member), totalMems, modifiedMember);
+
+		fclose(modifiedMember);
+
+	} while (toupper(continousChoice) == 'Y');
+}
+
+void memberMenu() {
+	int choice;
+
+	login();
+
+	do {
+		printf("\n=== Member Menu ===\n");
+		printf("1. Search\n");
+		printf("2. Modify\n");
+		printf("3. Delete\n");
+		printf("4. Booking Ticket\n");
+		printf("5. Check Ticket Status\n");
+		printf("6. Cancel Booking\n");
+		printf("7. Report\n");
+		printf("8. Logout and Exit\n");
+		printf("Enter your choice: ");
+		rewind(stdin);
+		scanf("%d", &choice);
+
+		switch (choice) {
+		case 1:
+			searchMemberInfo();
+			break;
+		case 2:
+			modifyMemberInfo();
+			break;
+		case 3:
+			printf("Delete function\n");
+			break;
+		case 4:
+			bookTicket();
+			break;
+		case 5:
+			checkTicketStatus();
+			break;
+		case 6:
+			cancelBooking();
+			break;
+		case 7:
+			report();
+			break;
+		case 8:
+			printf("You Have Successfully Looged Out and Exit Member Menu. Have A Nice Day ^_^\n");
+			return;
+		default:
+			printf("Invalid choice. Please enter a number between 1 to 4.\n");
+			break;
+		}
+	} while (choice != 4);
+}
+
+
+//Schedule Modele
+void addSchedule() {
+
+	/*char depTime,arrivalTime,destination,date;
+	double ticketPrice;
+	int avalSeat;*/
+	SchedulingModel Schedule;
+
+	FILE * addSchedule;
+
+	addSchedule = fopen("schedule.txt","a");
+
+	printf("Enter Date           :");
+	scanf("%s",&Schedule.date);
+
+	printf("Enter Departure Time :");
+	scanf("%s",&Schedule.departureT);
+
+	printf("Enter Arrival Time   :");
+	scanf("%s",&Schedule.Arrivalt);
+	
+	printf("Enter Destination    :");
+	scanf("%s", &Schedule.destination);
+
+	printf("Enter Ticket Price   :");
+	scanf("%lf", &Schedule.price);
+
+	printf("Enter Avalable Seat  :");
+	scanf("%d", &Schedule.availableSeat);
+
+	
+	fprintf(addSchedule,"%s | %s | %s | %s | %lf | %d \n", Schedule.date,Schedule.departureT, Schedule.Arrivalt, Schedule.destination, Schedule.price, Schedule.availableSeat);
+
+	fclose(addSchedule);
+}
+
+void disBooking() {
+
+}
+
+void editSchedule() {
+
+}
+
+
+//Booking Modele Function
+void bookingMain() {
+	system("cls");
+	printf("Thank you for using XXX train!              \n");
+	printf("--------------------------------------------\n");
+	printf("|              Ticket Booking              |\n");
+	printf("============================================\n");
+	printf("[1] Book ticket                             \n");
+	printf("[2] Check ticket status                     \n");
+	printf("[3] Edit booking                            \n");
+	printf("[4] Cancel booking                          \n");
+	printf("[5] Display booked tickets (staff only) TBA \n");
+	printf("[6] Report (staff only)                 TBA \n\n");
+
+	printf("Press 0 to exit program                     \n");
+	printf("Select your option (1-6): ");
+}
+
+void bookTicketHeading() {
+	printf("--------------------------------------------\n");
+	printf("|                Book tickets              |\n");
+	printf("============================================\n");
+}
+
+void searchTicketHeading() {
+	printf("--------------------------------------------\n");
+	printf("|              Search tickets              |\n");
+	printf("============================================\n");
+}
+
+void editTicketHeading() {
+	printf("--------------------------------------------\n");
+	printf("|                Edit tickets              |\n");
+	printf("============================================\n");
+}
+
+void deleteTicketHeading() {
+	printf("--------------------------------------------\n");
+	printf("|              Delete tickets              |\n");
+	printf("============================================\n");
+}
+
+void displayTicketHeading() {
+	printf("--------------------------------------------\n");
+	printf("|             Display tickets              |\n");
+	printf("============================================\n");
+}
+
+void stations() {
+	printf("[ 1]Alor Setar         [ 9]KL Sentral       \n");
+	printf("[ 2]Sungai Petani      [10]Kajang           \n");
+	printf("[ 3]Butterworth        [11]Seremban         \n");
+	printf("[ 4]Taiping            [12]Gemas            \n");
+	printf("[ 5]Ipoh               [13]Segamat          \n");
+	printf("[ 6]Kampar             [14]Kluang           \n");
+	printf("[ 7]Rawang             [15]Kulai            \n");
+	printf("[ 8]Sungai Buloh       [16]JB Sentral       \n\n");
+}
+
+void displayCoach() {
+	printf("[ A]Coach A            [ D]Coach D          \n");
+	printf("[ B]Coach B            [ E]Coach E          \n");
+	printf("[ C]Coach C            [ F]Coach F          \n");
+}
+
+//INSERT NEW BOOKING
+void bookTicket() {
+	//DECLARATIONS
+	typedef struct {
+		char memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
+		int bookingNo, memberNo, trainNo, seatNo[7], quantity, day, month, year, hour, minute;
+		double payment;
+	}TrainTicket;
+	TrainTicket ticket[100];
+
+	typedef struct {
+		char memberID[6], departStation[40], arriveStation[40], coach;
+		int day, month, year, quantity, seatNo[6];
+	}Info;
+	Info user;
+
+	FILE* readTicketPT, * insertBooking;
+
+	//OPEN Bookings.txt for reading
+	readTicketPT = fopen("Bookings.txt", "r");
+
+	//RECORDS the amount of rows in file and their values
+	int record = 0;
+	while (!feof(readTicketPT)) {
+		fscanf(readTicketPT, "B%d|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|T%d|%c|%d|%lf\n", &ticket[record].bookingNo, ticket[record].memberID,
+			ticket[record].bookingDate, ticket[record].departDate, ticket[record].departStation, ticket[record].arriveStation,
+			&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
+		record++;
+	};
+	fclose(readTicketPT); //close file
+
+	//OPEN Bookings.txt for append (insert booking record)
+	insertBooking = fopen("Bookings.txt", "a");
+	if (insertBooking != NULL) {
+		int warning = 0; //used to display error input
+		//input MEMBER ID
+		system("cls");
+		bookTicketHeading();
+		getMemberID(user.memberID, warning);
+
+		//input DEPARTURE DATE
+		system("cls");
+		bookTicketHeading();
+		int sysDay, sysMonth, sysYear;
+		getCurrentTime(&sysDay, &sysMonth, &sysYear);
+		getDepartDate(&user.day, &user.month, &user.year, sysYear, warning);
+
+		//input DEPART AND ARRIVE STATION
+		system("cls");
+		bookTicketHeading();
+		stations();
+		getStation(user.departStation, user.arriveStation, warning);
+
+		//input BOOKING QUANTITY
+		system("cls");
+		bookTicketHeading();
+		getQuantity(&user.quantity, warning);
+
+		//input COACH
+		system("cls");
+		bookTicketHeading();
+		displayCoach();
+		user.coach = getCoach(warning);
+
+		//input SEAT NUMBER
+		for (int noOfSeat = 0; noOfSeat < user.quantity; noOfSeat++) {
+			system("cls");
+			bookTicketHeading();
+			getSeatNo(&user.seatNo[noOfSeat], noOfSeat, warning);
+		}
+
+		//PAYMENT INFO
+		system("cls");
+		bookTicketHeading();
+		payment(user.quantity);
+
+		/*input TRAIN ID*/
+
+		/*input TIME*/
+
+		//INSERT VALUE INTO FILE, CHANGE LATER FOR TRAIN ID & TIME (SCHEDULE)
+		insertBooking = fopen("Bookings.txt", "a");
+		for (int row = 0; row < user.quantity; row++) {
+			fprintf(insertBooking, "B%d|%s|%02d-%02d-%d|%02d-%02d-%d|%s|%s|T101|%c|%d|30.00\n", (ticket[record - 1].bookingNo + 1 + row),
+				user.memberID, sysDay, sysMonth, sysYear, user.day, user.month, user.year, user.departStation, user.arriveStation,
+				user.coach, user.seatNo[row]);
+			printf("Your No\.%d booking ID is B%d \n", (row + 1), (ticket[record - 1].bookingNo + 1 + row));
+		}
+	}
+	else {
+		printf("Error opening file.\n");
+	}
+	fclose(insertBooking);
+}
+
+//SEARCH FOR BOOKING ID 
+void checkTicketStatus() {
+	typedef struct {
+		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
+		int trainNo, seatNo, quantity, day, month, year, hour, minute;
+		double payment;
+	}TrainTicket;
+	TrainTicket ticket[100];
+
+	FILE* readTicketPT;
+
+	//OPEN Bookings.txt for reading
+	readTicketPT = fopen("Bookings.txt", "r");
+
+	if (readTicketPT != NULL) {
+		//RECORDS the amount of rows in file and their values
+		int record = 0;
+		while (!feof(readTicketPT)) {
+			fscanf(readTicketPT, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|T%d|%c|%d|%lf\n", ticket[record].bookingID, ticket[record].memberID,
+				ticket[record].bookingDate, ticket[record].departDate, ticket[record].departStation, ticket[record].arriveStation,
+				&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
+			record++;
+		};
+
+		//ask user to enter bookingID to search for
+		int found = -1, warning2 = 0;
+		do {
+			int warning = 0;
+			char bookingID[6];
+			system("cls");
+			searchTicketHeading();
+			if (warning2 > 0) {
+				printf("BookingID not found, please try again.\n");
+			}
+			getBookingID(bookingID, warning);
+
+			//compare user input with array in file
+			for (int row = 0; row < record; row++) {
+				if (strcmp(ticket[row].bookingID, bookingID) == 0) {
+					found = row;
+					printf("\n");
+					printf("       Booking ID: %s\n", ticket[row].bookingID);
+					printf("        Member ID: %s\n", ticket[row].memberID);
+					printf("     Booking Date: %s\n", ticket[row].bookingDate);
+					printf("   Departure Date: %s\n", ticket[row].departDate);
+					printf("Departure Station: %s\n", ticket[row].departStation);
+					printf("      Destination: %s\n", ticket[row].arriveStation);
+					printf("         Train ID: T%d\n", ticket[row].trainNo);
+					printf("         Coach ID: %c\n", ticket[row].coach);
+					printf("          Seat No: %d\n", ticket[row].seatNo);
+					printf("            Price: %.2lf\n", ticket[row].payment);
+				}
+			}
+			warning2++;
+		} while (found == -1);
+	}
+	else {
+		printf("File not found, system gg.\n");
+	}
+	fclose(readTicketPT);
+}
+
+//EDIT BOOKING ID
+void editBooking() {
+	typedef struct {
+		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
+		int trainNo, seatNo, quantity, day, month, year, hour, minute;
+		double payment;
+	}TrainTicket;
+	TrainTicket ticket[100];
+
+	FILE* readTicketPT, * editTicket;
+
+	//OPEN Bookings.txt for reading
+	readTicketPT = fopen("Bookings.txt", "r");
+
+	if (readTicketPT == NULL) {
+		printf("Failed to open file\n");
+		exit(-1);
+	}
+	//RECORDS the amount of rows in file and their values
+	int record = 0;
+	while (!feof(readTicketPT)) {
+		fscanf(readTicketPT, "%[^|]|%[^|]|%[^|]|%d-%d-%d|%[^|]|%[^|]|T%d|%c|%d|%lf\n", ticket[record].bookingID, ticket[record].memberID,
+			ticket[record].bookingDate, &ticket[record].day, &ticket[record].month, &ticket[record].year, ticket[record].departStation, ticket[record].arriveStation,
+			&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
+		record++;
+	};
+	fclose(readTicketPT);
+
+	//ask user to enter bookingID to search for
+	int found = -1, warning2 = 0;
+	do {
+		int warning = 0;
+		char bookingID[6];
+		system("cls");
+		editTicketHeading();
+		if (warning2 > 0) {
+			printf("BookingID not found, please try again.\n");
+		}
+		getBookingID(bookingID, warning);
+
+		//compare user input with array in file
+		int row = 0;
+		for (row; row < record; row++) {
+			if (strcmp(ticket[row].bookingID, bookingID) == 0) {
+				found = row;
+				system("cls");
+				editTicketHeading();
+				printf("\Booking ID found, you may start editing.\n\n");
+				int sysDay, sysMonth, sysYear;
+				getCurrentTime(&sysDay, &sysMonth, &sysYear);
+				getDepartDate(&ticket[row].day, &ticket[row].month, &ticket[row].year, sysYear, warning);
+				system("cls");
+				editTicketHeading();
+				stations();
+				getStation(ticket[row].departStation, ticket[row].arriveStation, warning);
+				system("cls");
+				editTicketHeading();
+				displayCoach();
+				ticket[row].coach = getCoach(warning);
+				system("cls");
+				editTicketHeading();
+				do {
+					if (warning > 0) {
+						printf("\nSeat has been occupied or invalid number.\n");
+					}
+					printf("Insert seat number (1-20): ");
+					rewind(stdin);
+					scanf("%d", &ticket[row].seatNo);
+					warning++;
+				} while (ticket[row].seatNo < 1 || ticket[row].seatNo > 20);
+				//display edited value
+				system("cls");
+				editTicketHeading();
+				printf("These are the edited booking:\n\n");
+				printf("       Booking ID: %s\n", ticket[row].bookingID);
+				printf("        Member ID: %s\n", ticket[row].memberID);
+				printf("     Booking Date: %s\n", ticket[row].bookingDate);
+				printf("   Departure Date: %02d-%02d-%d\n", ticket[row].day, ticket[row].month, ticket[row].year);
+				printf("Departure Station: %s\n", ticket[row].departStation);
+				printf("      Destination: %s\n", ticket[row].arriveStation);
+				printf("         Train ID: T%d\n", ticket[row].trainNo);
+				printf("         Coach ID: %c\n", ticket[row].coach);
+				printf("          Seat No: %d\n", ticket[row].seatNo);
+				printf("            Price: %.2lf\n", ticket[row].payment);
+			}
+		}
+		warning2++;
+	} while (found == -1);
+	//write new values into file
+	editTicket = fopen("Bookings.txt", "w");
+	for (int input = 0; input < record; input++) {
+		fprintf(editTicket, "%s|%s|%s|%02d-%02d-%d|%s|%s|T%d|%c|%d|%.2lf\n", ticket[input].bookingID, ticket[input].memberID,
+			ticket[input].bookingDate, ticket[input].day, ticket[input].month, ticket[input].year, ticket[input].departStation, ticket[input].arriveStation, ticket[input].trainNo,
+			ticket[input].coach, ticket[input].seatNo, ticket[input].payment);
+	}
+	fclose(editTicket);
+}
+
+//DELETE BOOKING ID
+void cancelBooking() {
+	typedef struct {
+		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
+		int trainNo, seatNo, quantity, day, month, year, hour, minute;
+		double payment;
+	}TrainTicket;
+	TrainTicket ticket[100];
+
+	FILE* readTicketPT, * deleteTicket;
+
+	//OPEN Bookings.txt for reading
+	readTicketPT = fopen("Bookings.txt", "r");
+
+	if (readTicketPT == NULL) {
+		printf("Failed to open file\n");
+		exit(-1);
+	}
+	//RECORDS the amount of rows in file and their values
+	int record = 0;
+	while (!feof(readTicketPT)) {
+		fscanf(readTicketPT, "%[^|]|%[^|]|%[^|]|%d-%d-%d|%[^|]|%[^|]|T%d|%c|%d|%lf\n", ticket[record].bookingID, ticket[record].memberID,
+			ticket[record].bookingDate, &ticket[record].day, &ticket[record].month, &ticket[record].year, ticket[record].departStation, ticket[record].arriveStation,
+			&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
+		record++;
+	};
+	fclose(readTicketPT);
+
+	//ask user to enter bookingID to search for
+	int found = -1, row = 0, warning2 = 0;
+	char confirm;
+	do {
+		int warning = 0;
+		char bookingID[6];
+		system("cls");
+		deleteTicketHeading();
+		if (warning2 > 0) {
+			printf("BookingID not found, please try again.\n");
+		}
+		getBookingID(bookingID, warning);
+
+		//compare user input with array in file
+		for (row; row < record; row++) {
+			if (strcmp(ticket[row].bookingID, bookingID) == 0) {
+				found = row;
+				system("cls");
+				deleteTicketHeading();
+				printf("Booking ID found.\n\n");
+				printf("       Booking ID: %s\n", ticket[row].bookingID);
+				printf("        Member ID: %s\n", ticket[row].memberID);
+				printf("     Booking Date: %s\n", ticket[row].bookingDate);
+				printf("   Departure Date: %02d-%02d-%d\n", ticket[row].day, ticket[row].month, ticket[row].year);
+				printf("Departure Station: %s\n", ticket[row].departStation);
+				printf("      Destination: %s\n", ticket[row].arriveStation);
+				printf("         Train ID: T%d\n", ticket[row].trainNo);
+				printf("         Coach ID: %c\n", ticket[row].coach);
+				printf("          Seat No: %d\n", ticket[row].seatNo);
+				printf("            Price: %.2lf\n", ticket[row].payment);
+
+				printf("\nAre you sure you want to delete?\n");
+				printf("(Y for YES, other letters for NO)\n");
+				rewind(stdin);
+				scanf("%c", &confirm);
+				confirm = toupper(confirm);
+			}
+		}
+		warning2++;
+	} while (found == -1);
+
+	//write into file if confirm is Y
+	if (confirm == 'Y') {
+		deleteTicket = fopen("Bookings.txt", "w");
+		for (int input = 0; input < found; input++) {
+			fprintf(deleteTicket, "%s|%s|%s|%02d-%02d-%d|%s|%s|T%d|%c|%d|%.2lf\n", ticket[input].bookingID, ticket[input].memberID,
+				ticket[input].bookingDate, ticket[input].day, ticket[input].month, ticket[input].year, ticket[input].departStation, ticket[input].arriveStation, ticket[input].trainNo,
+				ticket[input].coach, ticket[input].seatNo, ticket[input].payment);
+		}
+		for (int input2 = (found + 1); input2 < record; input2++) {
+			fprintf(deleteTicket, "%s|%s|%s|%02d-%02d-%d|%s|%s|T%d|%c|%d|%.2lf\n", ticket[input2].bookingID, ticket[input2].memberID,
+				ticket[input2].bookingDate, ticket[input2].day, ticket[input2].month, ticket[input2].year, ticket[input2].departStation, ticket[input2].arriveStation, ticket[input2].trainNo,
+				ticket[input2].coach, ticket[input2].seatNo, ticket[input2].payment);
+		}
+		system("cls");
+		deleteTicketHeading();
+		printf("Booking Deleted!");
+		fclose(deleteTicket);
+	}
+	else {
+		system("cls");
+		deleteTicketHeading();
+		printf("Delete cancelled, bye!\n");
+	}
+}
+
+//DISPLAY ALL BOOKINGS
+void displayBookedTickets() {
+	typedef struct {
+		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
+		int trainNo, seatNo, quantity, day, month, year, hour, minute;
+		double payment;
+	}TrainTicket;
+	TrainTicket ticket[100];
+
+	FILE* readTicketPT;
+
+	//OPEN Bookings.txt for reading
+	readTicketPT = fopen("Bookings.txt", "r");
+
+	if (readTicketPT != NULL) {
+		//RECORDS the amount of rows in file and their values
+		int record = 0;
+		while (!feof(readTicketPT)) {
+			fscanf(readTicketPT, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|T%d|%c|%d|%lf\n", ticket[record].bookingID, ticket[record].memberID,
+				ticket[record].bookingDate, ticket[record].departDate, ticket[record].departStation, ticket[record].arriveStation,
+				&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
+			record++;
+		};
+
+		system("cls");
+		displayTicketHeading();
+		printf("\n");
+		printf("Booking ID\tMember ID\tDeparture Date\tArrival Date\tDeparture Station\tDestination\t\tTrain ID\tCoach ID\tSeat No\n");
+		printf("----------\t---------\t--------------\t------------\t-----------------\t-----------\t\t--------\t--------\t-------\n");
+		for (int i = 0; i < record; i++) {
+			printf("%s\t\t%s\t\t%s\t%s\t%-14s\t\t%-14s\t\tT%d\t\t%c\t\t%d\n", ticket[i].bookingID, ticket[i].memberID,
+				ticket[i].bookingDate, ticket[i].departDate, ticket[i].departStation, ticket[i].arriveStation,
+				ticket[i].trainNo, ticket[i].coach, ticket[i].seatNo);
+		}
+	}
+	else {
+		printf("File not found, system gg.\n");
+	}
+	fclose(readTicketPT);
+}
+
+//DISPLAY TOTAL BOOKED TICKET
+void report() {
+	typedef struct {
+		char bookingID[6], memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
+		int trainNo, seatNo, quantity, day, month, year, hour, minute;
+		double payment;
+	}TrainTicket;
+	TrainTicket ticket[100];
+
+	FILE* readTicketPT;
+
+	//OPEN Bookings.txt for reading
+	readTicketPT = fopen("Bookings.txt", "r");
+
+	if (readTicketPT != NULL) {
+		//RECORDS the amount of rows in file and their values
+		int record = 0;
+		while (!feof(readTicketPT)) {
+			fscanf(readTicketPT, "%[^|]|%[^|]|%d-%d-%d|%[^|]|%[^|]|%[^|]|T%d|%c|%d|%lf\n", ticket[record].bookingID, ticket[record].memberID,
+				&ticket[record].day, &ticket[record].month, &ticket[record].year, ticket[record].departDate, ticket[record].departStation, ticket[record].arriveStation,
+				&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
+			record++;
+		};
+
+		int sysDay, sysMonth, sysYear;
+		system("cls");
+		displayTicketHeading();
+		getCurrentTime(&sysDay, &sysMonth, &sysYear);
+		printf("\n");
+		printf("%-12s %-12s %-15s %-15s %-20s %-20s %-9s %-9s %-8s\n", "Booking ID", "Member ID", "Departure Date", "Arrival Date", "Departure Station", "Destination", "Train ID", "Coach ID", "Seat No");
+		printf("%-12s %-12s %-15s %-15s %-20s %-20s %-9s %-9s %-8s\n", "----------", "---------", "--------------", "------------", "-----------------", "-----------", "--------", "--------", "-------");
+		for (int i = 0; i < record; i++) {
+			if ((ticket[i].day == sysDay) && (ticket[i].month == sysMonth) && (ticket[i].year == sysYear)) {
+				printf("%s\t\t%s\t\t%02d-%02d-%d\t%s\t%-14s\t\t%-14s\t\tT%d\t\t%c\t\t%d\n", ticket[i].bookingID, ticket[i].memberID,
+					ticket[i].day, ticket[i].month, ticket[i].year, ticket[i].departDate, ticket[i].departStation, ticket[i].arriveStation,
+					ticket[i].trainNo, ticket[i].coach, ticket[i].seatNo);
+			}
+		}
+	}
+	else {
+		printf("File not found, system gg.\n");
+	}
+	fclose(readTicketPT);
+}
+
+void getBookingID(char bookingID[6], int warning) {
+	do {
+		if (warning > 0) {
+			printf("\nInvalid ID format, please try again.\n");
+		}
+		printf("Insert booking ID (B****): ");
+		rewind(stdin);
+		scanf("%[^\n]", bookingID);
+		bookingID[0] = toupper(bookingID[0]);
+		warning++;
+	} while (bookingID[0] != 'B' || isdigit(bookingID[1]) == 0 || isdigit(bookingID[2]) == 0
+		|| isdigit(bookingID[3]) == 0 || isdigit(bookingID[4]) == 0 || strlen(bookingID) > 5);
+}
+
+void getMemberID(char memberID[6], int warning) {
+	do {
+		if (warning > 0) {
+			printf("\nInvalid member format, please enter again\n");
+		}
+		printf("Insert member ID (M1000): ");
+		rewind(stdin);
+		scanf("%[^\n]", memberID);
+		memberID[0] = toupper(memberID[0]);
+		warning++;
+	} while (memberID[0] != 'M' || isdigit(memberID[1]) == 0 || isdigit(memberID[2]) == 0
+		|| isdigit(memberID[3]) == 0 || isdigit(memberID[4]) == 0 || strlen(memberID) > 5);
+}
+
+void getDepartDate(int* day, int* month, int* year, int sysYear, int warning) {
+	do {
+		if (warning > 0) {
+			printf("\nInvalid date format, please enter again.\n");
+		}
+		printf("Insert departure date (DD-MM-YYYY): ");
+		rewind(stdin);
+		scanf("%d-%d-%d", day, month, year);
+		warning++;
+	} while (*day < 1 || *day > 31 || *month < 1 || *month > 12 || *year < sysYear);
+}
+
+void getCurrentTime(int* sday, int* smonth, int* syear) {
+	time_t t = time(NULL);
+	struct tm date = *localtime(&t);
+	//add 1 to month, 1900 to year to show the proper numbers
+	printf("Current date is %02d-%02d-%d\n", date.tm_mday, date.tm_mon + 1, date.tm_year + 1900);
+	*sday = date.tm_mday;
+	*smonth = date.tm_mon + 1;
+	*syear = date.tm_year + 1900;
+}
+
+void getStation(char departStation[40], char arriveStation[40], int warning) {
+	int dStat, aStat; //represents departure and arrival stations
+	do {
+		if (warning > 0) {
+			printf("\nInvalid station, please enter again.\n");
+		}
+		printf("Insert departure station (1-16): ");
+		rewind(stdin);
+		scanf("%d", &dStat);
+		printf("Insert destination (1-16): ");
+		rewind(stdin);
+		scanf("%d", &aStat);
+		warning++;
+	} while (dStat < 1 || dStat > 16 || aStat < 1 || aStat > 16 || (dStat == aStat));
+	//get depart station with dStat
+	if (dStat == 1) {
+		strcpy(departStation, "Alor Setar");
+	}
+	else if (dStat == 2) {
+		strcpy(departStation, "Sungai Petani");
+	}
+	else if (dStat == 3) {
+		strcpy(departStation, "Butterworth");
+	}
+	else if (dStat == 4) {
+		strcpy(departStation, "Taiping");
+	}
+	else if (dStat == 5) {
+		strcpy(departStation, "Ipoh");
+	}
+	else if (dStat == 6) {
+		strcpy(departStation, "Kampar");
+	}
+	else if (dStat == 7) {
+		strcpy(departStation, "Rawang");
+	}
+	else if (dStat == 8) {
+		strcpy(departStation, "Sungai Buloh");
+	}
+	else if (dStat == 9) {
+		strcpy(departStation, "KL Sentral");
+	}
+	else if (dStat == 10) {
+		strcpy(departStation, "Kajang");
+	}
+	else if (dStat == 11) {
+		strcpy(departStation, "Seremban");
+	}
+	else if (dStat == 12) {
+		strcpy(departStation, "Gemas");
+	}
+	else if (dStat == 13) {
+		strcpy(departStation, "Segamat");
+	}
+	else if (dStat == 14) {
+		strcpy(departStation, "Kluang");
+	}
+	else if (dStat == 15) {
+		strcpy(departStation, "Kulai");
+	}
+	else {
+		strcpy(departStation, "JB Sentral");
+	}
+	//get arrive station with aStat
+	if (aStat == 1) {
+		strcpy(arriveStation, "Alor Setar");
+	}
+	else if (aStat == 2) {
+		strcpy(arriveStation, "Sungai Petani");
+	}
+	else if (aStat == 3) {
+		strcpy(arriveStation, "Butterworth");
+	}
+	else if (aStat == 4) {
+		strcpy(arriveStation, "Taiping");
+	}
+	else if (aStat == 5) {
+		strcpy(arriveStation, "Ipoh");
+	}
+	else if (aStat == 6) {
+		strcpy(arriveStation, "Kampar");
+	}
+	else if (aStat == 7) {
+		strcpy(arriveStation, "Rawang");
+	}
+	else if (aStat == 8) {
+		strcpy(arriveStation, "Sungai Buloh");
+	}
+	else if (aStat == 9) {
+		strcpy(arriveStation, "KL Sentral");
+	}
+	else if (aStat == 10) {
+		strcpy(arriveStation, "Kajang");
+	}
+	else if (aStat == 11) {
+		strcpy(arriveStation, "Seremban");
+	}
+	else if (aStat == 12) {
+		strcpy(arriveStation, "Gemas");
+	}
+	else if (aStat == 13) {
+		strcpy(arriveStation, "Segamat");
+	}
+	else if (aStat == 14) {
+		strcpy(arriveStation, "Kluang");
+	}
+	else if (aStat == 15) {
+		strcpy(arriveStation, "Kulai");
+	}
+	else {
+		strcpy(arriveStation, "JB Sentral");
+	}
+}
+
+void getQuantity(int* quantity, int warning) {
+	do {
+		if (warning > 0) {
+			printf("\nInvalid quantity, please enter again.\n");
+		}
+		printf("Insert booking pax (1-6): ");
+		rewind(stdin);
+		scanf("%d", quantity);
+		warning++;
+	} while (*quantity < 1 || *quantity > 6);
+}
+
+char getCoach(int warning) {
+	char coach;
+	do {
+		if (warning > 0) {
+			printf("\nInvalid coach format, please enter again.\n");
+		}
+		printf("Insert coach alphabet (A-F): ");
+		rewind(stdin);
+		scanf(" %c", &coach);
+		coach = toupper(coach);
+		warning++;
+	} while (coach < 'A' || coach > 'F');
+
+	return coach;
+}
+
+void getSeatNo(int* seatNo, int noOfSeat, int warning) {
+	do {
+		if (warning > 0) {
+			printf("\nSeat has been occupied or invalid number.\n");
+		}
+		printf("Insert seat number %d (1-20): ", noOfSeat + 1);
+		rewind(stdin);
+		scanf("%d", seatNo);
+		warning++;
+	} while (*seatNo < 1 || *seatNo > 20);
+}
+
+void payment(int quantity) {
+	double payment;
+	payment = 30.0 * quantity;
+	printf("Total payment required: RM %.2f\n", payment);
+}
+
+
+
+int main() {
+	system("color 70");
+	int menuOption;
+
+	mainMenu();
+	scanf("%d", &menuOption);
+
+	if (menuOption == 1) {
+		staffMode();
+	}
+	else if (menuOption == 2) {
+		//Member Modele
+		memberMenu();
+	}
+	else if (menuOption == 3) {
+		//Non-Member
+		nonMemberMenu();
+	}
+	else if (menuOption == 4) {
+		//exit
+		exit(0);
+	}
+	else {
+		error();
+	}
+}
