@@ -14,7 +14,7 @@ typedef struct {
 //void staffMenu();
 void memberMenu();
 void nonMemberMenu();
-void login();
+int memberLogin();
 
 
 void nonMemberMenu() {
@@ -150,7 +150,6 @@ int loginMember(char* enteredMemberID, char* enteredPassword) {
 }
 
 
-
 int countMembers() { //Count quantity of members
 	FILE* memberQuantity;
 	Member entered;
@@ -170,28 +169,6 @@ int countMembers() { //Count quantity of members
 	return count;
 }
 
-/*int findMemberIDPass(char* enteredMemberID, char* enteredICNo) { // To compare member ID and Password
-	int numOfMember = 0;
-
-	FILE* readMemberIDPass;
-	Member fileMember;
-	readMemberIDPass = fopen("members.bin", "rb");
-
-	if (readMemberIDPass == NULL) {
-		printf("Error opening file!\n");
-		return 0;
-	}
-
-	while (fread(&fileMember, sizeof(Member), 1, readMemberIDPass)) {
-		numOfMember++;
-		if (strcmp(fileMember.memberID, enteredMemberID) == 0 && strcmp(fileMember.icNo, enteredICNo) == 0) {
-			fclose(readMemberIDPass);
-			return 1; //Member ID and IC No match
-		}
-	}
-	fclose(readMemberIDPass);
-	return 0;// Member ID and IC No not match
-}*/
 
 void passwordRecovery() {
 
@@ -278,7 +255,7 @@ void passwordRecovery() {
 
 		else if (toupper(confirm) == 'N') {
 			printf("Password change cancelled.\n");
-			login();
+			memberLogin();
 		}
 
 		else {
@@ -288,7 +265,8 @@ void passwordRecovery() {
 	} while (toupper(confirm) != 'Y' && toupper(confirm) != 'N');
 }
 
-void login() {
+
+int memberLogin() {
 	char enteredMemberID[20];
 	char enteredPassword[20];
 	int loginChance = 0;
@@ -307,7 +285,7 @@ void login() {
 
 		if (result == 1) {
 			printf("Login successful!\n");
-			break;
+			return 1;
 		}
 		else if (loginChance < maxLoginChances - 1 ) {
 			printf("Invalid Member ID or Password. Please try again.\n");
@@ -325,66 +303,15 @@ void login() {
 			}
 			else {
 				printf("Returning to Main Menu\n");
-				break;
+				return 0;
 			}
 		}
 		loginChance++;
 	} while (loginChance < maxLoginChances);
+
+	return 0;
 }
 
-void searchMemberInfo() {
-
-	Member fileMember;
-	char enteredID[30];
-	int found = 0;
-	int totalMembers;
-	char continueSearch;
-
-	totalMembers = countMembers();
-
-
-		do {
-			printf("\n === Member Search ===\n");
-			printf("Enter Member ID: ");
-			rewind(stdin);
-			scanf("%s", enteredID);
-
-			FILE* searchMember;
-			searchMember = fopen("members.bin", "rb");
-
-			if (searchMember == NULL) {
-				printf("Error opening file\n");
-				return;
-			}
-
-			for (int i = 0; i < totalMembers; i++) { //Search for entered Member ID 
-				fread(&fileMember, sizeof(Member), 1, searchMember);
-				if (strcmp(fileMember.memberID, enteredID) == 0) {
-					found = 1;
-					break;
-				}
-			}
-			fclose(searchMember);
-
-			if (found) { //Member ID found, display member information
-				printf("\n === Member Information === \n");
-				printf("Member ID      : %s\n", fileMember.memberID);
-				printf("Name           : %s\n", fileMember.name);
-				printf("Password       : %s\n", fileMember.password);
-				printf("Gender         : %c\n", fileMember.gender);
-				printf("IC Number      : %s\n", fileMember.icNo);
-				printf("Contact Number : %s\n", fileMember.contactNo);
-			}
-			else {
-				printf("Member ID '%s' not found. Please try again.\n", enteredID);
-			}
-
-			printf("\nDo you want to continue searching? (Y for yes and any elements for No): ");
-			rewind(stdin);
-			scanf(" %c", &continueSearch);
-
-		} while (toupper(continueSearch) == 'Y');
-}
 
 void modifyMemberInfo() {
 	Member inFileMember[30];
@@ -393,6 +320,7 @@ void modifyMemberInfo() {
 	int found = -1;
 	int totalMems;
 	char continousChoice;
+	int nameExisted;
 
 	do {
 		printf("\n === Modify Member Information ===\n");
@@ -424,18 +352,93 @@ void modifyMemberInfo() {
 				printf("IC Number      : %s\n", inFileMember[i].icNo);
 				printf("Contact Number : %s\n", inFileMember[i].contactNo);
 
-				// Prompt user to modify each field
-				printf("\n === Modify Member Information ===\n");
-				printf("Enter New Name: ");
-				scanf("%s", inFileMember[i].name);
+				printf("\n === Modify Member Information ===\n"); //Prompt user to modify each field
+
+				do {
+					nameExisted = 0;
+					printf("Enter New Name: ");
+					rewind(stdin);
+					scanf("%[^\n]", inFileMember[i].name);
+					for (int j = 0; j < totalMems; j++) {
+						if (j != i && strcmp(inFileMember[j].name, inFileMember[i].name) == 0) {
+							printf("Name already exists. Please enter another name.\n");
+							nameExisted = 1;
+							break;
+						}
+					}
+				} while (nameExisted);
+
 				printf("Enter New Password: ");
+				rewind(stdin);
 				scanf("%s", inFileMember[i].password);
+
 				printf("Enter New Gender (M/F): ");
+				rewind(stdin);
 				scanf(" %c", &inFileMember[i].gender);
-				printf("Enter New IC Number (XXXXXX-XX-XXXX): ");
-				scanf("%s", inFileMember[i].icNo);
-				printf("Enter New Contact Number: ");
-				scanf("%s", inFileMember[i].contactNo);
+				inFileMember[i].gender = toupper(inFileMember[i].gender);
+
+				while (inFileMember[i].gender != 'M' && inFileMember[i].gender != 'F') {
+					printf("Invalid input. Please enter M or F: ");
+					rewind(stdin);
+					scanf(" %c", &inFileMember[i].gender);
+					inFileMember[i].gender = toupper(inFileMember[i].gender);
+				}
+
+				int isValidIC = 0;
+				while (!isValidIC) {
+					printf("Enter New IC Number (XXXXXX-XX-XXXX): ");
+					rewind(stdin);
+					scanf("%[^\n]", inFileMember[i].icNo);
+
+					if (strlen(inFileMember[i].icNo) != 14 || inFileMember[i].icNo[6] != '-' || inFileMember[i].icNo[9] != '-') {
+						printf("Invalid IC Number Format. Please enter in the format XXXXXX-XX-XXXX.\n");
+					}
+					else { //Check if first 6 digits are numbers
+						isValidIC = 1;
+						for (int z = 0; z < 6; z++) {
+							if (!isdigit(inFileMember[i].icNo[z])) {
+								isValidIC = 0;
+								printf("Invalid IC Number Format. Please enter in the format XXXXXX--XX-XXXX.\n");
+								break;
+							}
+						}
+					}
+
+				}
+
+				int isValidContact = 0;
+				while (!isValidContact) {
+					printf("Enter New Contact Number: ");
+					rewind(stdin);
+					scanf("%[^\n]", inFileMember[i].contactNo);
+
+					if (strlen(inFileMember[i].contactNo) < 10 || strlen(inFileMember[i].contactNo) > 12) {
+						printf("Invalid Contact Number Format. Please enter in format XXX-XXXXXXX or XXX-XXXXXXXX.\n");
+					}
+
+					else if (inFileMember[i].contactNo[0] != 0 || inFileMember[i].contactNo[1] != '1') {
+						printf("Invalid Contact Number Format. The first two digits must be '01.\n");
+
+					}
+
+					else if (inFileMember[i].contactNo[3] != '-') {
+						printf("Invalid Contact Number Format. Please include a '-' after the third digit.\n");
+					}
+
+					else {
+						for (int k = 0; k < strlen(inFileMember[i].contactNo); k++) {
+							if (k != 3 && !isdigit(inFileMember[i].contactNo[k])) {
+								printf("Invalid Contact Number Foramt. Please enter only digits after the '-' symbol.\n");
+								break;
+							}
+						}
+						isValidContact = 1;
+					}
+				}
+
+				if (!isValidContact) {
+					printf("Invalid Contact Number in the format XXX-XXXXXXX or XXX-XXXXXXXX.\n");
+				}
 
 				printf("\nMember information modified successfully!\n");
 				break; // Exit loop after modifying the record
@@ -458,14 +461,124 @@ void modifyMemberInfo() {
 }
 
 
+void deleteMemberAccount() {
+	char entertMemID[20];
+	char entertICNo[15];
+	char confirmDelete;
+	char enterAgain, enter2, enter3;
+	int founded = -1;
+	int allMembers;
+
+	allMembers = countMembers();
+
+	printf("\n=== Delete Member Account ===\n");
+	printf("Enter Member ID: ");
+	rewind(stdin);
+	scanf("%[^\n]", entertMemID);
+	printf("Enter IC Number (XXXXXX-XX-XXXX): ");
+	rewind(stdin);
+	scanf("%[^\n]", entertICNo);
+
+	Member tempry[200];
+
+	for (int r = 0; r < allMembers; r++) {
+		if (strcmp(tempry[r].memberID, entertMemID) == 0 && strcmp(tempry[r].icNo, entertICNo) == 0) {
+			founded = r;
+			printf("\n=== Member Information ===\n");
+			printf("Member ID: %s\n", tempry[r].memberID);
+			printf("Name: %s\n", tempry[r].name);
+			printf("Gender: %c\n", tempry[r].gender);
+			printf("IC Number: %s\n", tempry[r].icNo);
+			printf("Contact Number: %s\n", tempry[r].contactNo);
+			break;
+		}
+	}
+
+	if (founded == -1) {
+		printf("Member ID and IC number did not match.\n");
+		printf("Do you want to try again? (Y/N): \n");
+		rewind(stdin);
+		scanf(" %c", &enterAgain);
+
+		if (toupper(enterAgain) == 'Y') {
+			deleteMemberAccount();
+		}
+		else {
+			printf("Returning to Member Menu. \n");
+			memberMenu();
+			return;
+		}
+	}
+
+	printf("Are you sure you want to delete this account? (Y/N): ");
+	rewind(stdin);
+	scanf(" %c", &confirmDelete);
+
+	if (toupper(confirmDelete) == 'Y') {
+		for (int e = 0; e < allMembers; e++) {
+			if (strcmp(tempry[e].memberID, entertMemID) == 0 && strcmp(tempry[e].icNo, entertICNo) == 0) {
+				strcpy(tempry[e].memberID, "XXXXXX");
+				strcpy(tempry[e].name, "XXXXXX");
+				tempry[e].gender = 'X';
+				strcpy(tempry[e].icNo, "XXXXXX-XX-XXXX");
+				strcpy(tempry[e].contactNo, "XXX-XXXXXXX");
+				printf("Account successfully deleted.\n");
+				break;
+			}
+		}
+	}
+	else if (toupper(confirmDelete) == 'N') {
+		printf("Account not deleted.\n");
+		printf("Do you want to try again? (Enter Y for Yes and any other letter for No): ");
+		rewind(stdin);
+		scanf(" %c", &enter2);
+		if (toupper(enter2) == 'Y') {
+			deleteMemberAccount();
+		}
+		else {
+			printf("Returning to Member Menu.\n");
+			memberMenu();
+		}
+	}
+	else {
+		printf("Invalid input.\n");
+		printf("Please enter 'Y' for Yes and any other letter for No: ");;
+		rewind(stdin);
+		scanf(" %c", &enter3);
+
+		if (toupper(enter3) == 'Y') {
+			deleteMemberAccount();
+		}
+		else {
+			printf("Returning to Member Menu.\n");
+			memberMenu();
+			return;
+		}
+
+	}
+
+	FILE* deleteFile;
+	deleteFile = fopen("members.bin", "wb");
+
+	if (deleteFile == NULL) {
+		printf("Error opening file.\n");
+		return;
+	}
+
+	for (int w = 0; w < allMembers; w++) {
+		fwrite(&tempry[w], sizeof(Member), 1, deleteFile);
+	}
+
+	fclose(deleteFile);
+}
+
+
 void memberMenu() {
 	int choice;
 
-	login();
-
 	do {
 		printf("\n=== Member Menu ===\n");
-		printf("1. Search\n");
+		printf("1. Booking\n");
 		printf("2. Modify\n");
 		printf("3. Delete\n");
 		printf("4. Logout and Exit\n");
@@ -475,13 +588,13 @@ void memberMenu() {
 
 		switch (choice) {
 		case 1:
-			searchMemberInfo();
+			printf("Booking");
 			break;
 		case 2:
 			modifyMemberInfo();
 			break;
 		case 3:
-			printf("Delete function\n");
+			deleteMemberAccount();
 			break;
 		case 4:
 			printf("You Have Successfully Looged Out and Exit Member Menu. Have A Nice Day ^_^\n");
@@ -494,40 +607,267 @@ void memberMenu() {
 }
 
 
+void searchMemberInfo() {
+
+	Member fileMember;
+	char enteredID[30];
+	int found = 0;
+	int totalMembers;
+	char continueSearch;
+
+	totalMembers = countMembers();
+
+
+	do {
+		printf("\n === Member Search ===\n");
+		printf("Enter Member ID: ");
+		rewind(stdin);
+		scanf("%s", enteredID);
+
+		FILE* searchMember;
+		searchMember = fopen("members.bin", "rb");
+
+		if (searchMember == NULL) {
+			printf("Error opening file\n");
+			return;
+		}
+
+		for (int i = 0; i < totalMembers; i++) { //Search for entered Member ID 
+			fread(&fileMember, sizeof(Member), 1, searchMember);
+			if (strcmp(fileMember.memberID, enteredID) == 0) {
+				found = 1;
+				break;
+			}
+		}
+		fclose(searchMember);
+
+		if (found) { //Member ID found, display member information
+			printf("\n === Member Information === \n");
+			printf("Member ID      : %s\n", fileMember.memberID);
+			printf("Name           : %s\n", fileMember.name);
+			printf("Password       : %s\n", fileMember.password);
+			printf("Gender         : %c\n", fileMember.gender);
+			printf("IC Number      : %s\n", fileMember.icNo);
+			printf("Contact Number : %s\n", fileMember.contactNo);
+		}
+		else {
+			printf("Member ID '%s' not found. Please try again.\n", enteredID);
+		}
+
+		printf("\nDo you want to continue searching? (Y for yes and any elements for No): ");
+		rewind(stdin);
+		scanf(" %c", &continueSearch);
+
+	} while (toupper(continueSearch) == 'Y');
+}
+
+
+void displayMembers() {
+	
+	FILE* memberFiles;
+	memberFiles = fopen("members.bin", "rb");
+
+	if (memberFiles == NULL) {
+		printf("Error opening file.\n");
+		return;
+	}
+
+	printf("\n=== Member Information ===\n");
+	printf(" Member ID \t\t Member Name \t\t Gender \t\t    IC Number \t\t      Contact Number \n");
+	
+	Member displayMem;
+	while (fread(&displayMem, sizeof(Member), 1, memberFiles)) {
+		printf("  %s \t\t\t %s \t\t\t   %c\t\t\t %s\t\t\t %s\t\t\t\n", displayMem.memberID, displayMem.name, displayMem.gender, displayMem.icNo, displayMem.contactNo);
+	}
+
+	fclose(memberFiles);
+}
+
+
+void deleteMember() {
+	char staffEnterMemID[20];
+	char staffEnterICNo[15];
+	char staffConfirmDelete;
+	char staffEnterAgain, staffEnter2, staffEnter3;
+	int founding = -1;
+	int lotOfMembers;
+
+	lotOfMembers = countMembers();
+
+	printf("\n=== Delete Member Account ===\n");
+	printf("Enter Member ID: ");
+	rewind(stdin);
+	scanf("%[^\n]", staffEnterMemID);
+	printf("Enter IC Number (XXXXXX-XX-XXXX): ");
+	rewind(stdin);
+	scanf("%[^\n]", staffEnterICNo);
+
+	Member tporary[200];
+
+	for (int r = 0; r < lotOfMembers; r++) {
+		if (strcmp(tporary[r].memberID, staffEnterMemID) == 0 && strcmp(tporary[r].icNo, staffEnterICNo) == 0) {
+			founding = r;
+			printf("\n=== Member Information ===\n");
+			printf("Member ID: %s\n", tporary[r].memberID);
+			printf("Name: %s\n", tporary[r].name);
+			printf("Gender: %c\n", tporary[r].gender);
+			printf("IC Number: %s\n", tporary[r].icNo);
+			printf("Contact Number: %s\n", tporary[r].contactNo);
+			break;
+		}
+	}
+
+	if (founding == -1) {
+		printf("Member ID and IC number did not match.\n");
+		printf("Do you want to try again? (Y/N): \n");
+		rewind(stdin);
+		scanf(" %c", &staffEnterAgain);
+
+		if (toupper(staffEnterAgain) == 'Y') {
+			deleteMember();
+		}
+		else {
+			printf("Returning to Staff Menu. \n");
+			staffMenu();
+			return;
+		}
+	}
+
+	printf("Are you sure you want to delete this account? (Y/N): ");
+	rewind(stdin);
+	scanf(" %c", &staffConfirmDelete);
+
+	if (toupper(staffConfirmDelete) == 'Y') {
+		for (int e = 0; e < lotOfMembers; e++) {
+			if (strcmp(tporary[e].memberID, staffEnterMemID) == 0 && strcmp(tporary[e].icNo, staffEnterICNo) == 0) {
+				strcpy(tporary[e].memberID, "XXXXXX");
+				strcpy(tporary[e].name, "XXXXXX");
+				tporary[e].gender = 'X';
+				strcpy(tporary[e].icNo, "XXXXXX-XX-XXXX");
+				strcpy(tporary[e].contactNo, "XXX-XXXXXXX");
+				printf("Account successfully deleted.\n");
+				break;
+			}
+		}
+	}
+	else if (toupper(staffConfirmDelete) == 'N') {
+		printf("Account not deleted.\n");
+		printf("Do you want to try again? (Enter Y for Yes and any other letter for No): ");
+		rewind(stdin);
+		scanf(" %c", &staffEnter2);
+		if (toupper(staffEnter2) == 'Y') {
+			deleteMember();
+		}
+		else {
+			printf("Returning to Staff Menu.\n");
+			staffMenu();
+		}
+	}
+	else {
+		printf("Invalid input.\n");
+		printf("Please enter 'Y' for Yes and any other letter for No: ");;
+		rewind(stdin);
+		scanf(" %c", &staffEnter3);
+
+		if (toupper(staffEnter3) == 'Y') {
+			deleteMember();
+		}
+		else {
+			printf("Returning to Staff Menu.\n");
+			staffMenu();
+			return;
+		}
+
+	}
+
+	FILE* staffDeleteFile;
+	staffDeleteFile = fopen("members.bin", "wb");
+
+	if (staffDeleteFile == NULL) {
+		printf("Error opening file.\n");
+		return;
+	}
+
+	for (int w = 0; w < lotOfMembers; w++) {
+		fwrite(&tporary[w], sizeof(Member), 1, staffDeleteFile);
+	}
+
+	fclose(staffDeleteFile);
+}
+
+
+void staffMenu() {
+	int staffChoice;
+
+	do {
+		printf("\n=== Staff Menu ===\n");
+		printf("1. Search\n");
+		printf("2. Display\n");
+		printf("3. Delete\n");
+		printf("4. Logout and Exit\n");
+		printf("Enter your choice: ");
+		rewind(stdin);
+		scanf("%d", &staffChoice);
+
+		switch (staffChoice) {
+		case 1:
+			searchMemberInfo();
+			break;
+		case 2:
+			displayMembers();
+			break;
+		case 3:
+			//deleteMember();
+			break;
+		case 4:
+			printf("You Have Successfully Looged Out and Exit Member Menu. Have A Nice Day ^_^\n");
+			return;
+		default:
+			printf("Invalid choice. Please enter a number between 1 to 4.\n");
+			break;
+		}
+	} while (staffChoice != 4);
+}
+
+
 int main() {
 	int choice;
 
-	do {
-		printf("========================================\n");
-		printf("+ Welcome to Member Information Module +\n");
-		printf("========================================\n");
-		printf("\nPlease select your role:\n");
-		printf("1. Staff\n");
-		printf("2. Member\n");
-		printf("3. Non-Member\n");
-		printf("4. Exit\n");
-		printf("Enter your choice: ");
-		scanf("%d", &choice);
+		do {
+			printf("========================================\n");
+			printf("+ Welcome to Member Information Module +\n");
+			printf("========================================\n");
+			printf("\nPlease select your role:\n");
+			printf("1. Staff\n");
+			printf("2. Member\n");
+			printf("3. Non-Member\n");
+			printf("4. Exit\n");
+			printf("Enter your choice: ");
+			scanf("%d", &choice);
 
-		switch (choice) {
-		case 1:
-			//staffMenu();
-			printf("Staff");
-			break;
-		case 2:
-			memberMenu();
-			break;
-		case 3:
-			nonMemberMenu();
-			break;
-		case 4:
-			printf("\nYou Have Successfully Exit This Module. Have A Nice Day ^_^\n");
-			break;
-		default :
-			printf("Invalid choice. Please try agian.\n");
-			break;
-		}
-	} while (choice != 4);
+			switch (choice) {
+			case 1:
+				/*if (staffLogin()) {
+					staffMenu();
+				}*/
+				staffMenu();
+				break;
+			case 2:
+				if (memberLogin()) {
+					memberMenu();
+				}
+				break;
+			case 3:
+				nonMemberMenu();
+				break;
+			case 4:
+				printf("\nYou Have Successfully Exit This Module. Have A Nice Day ^_^\n");
+				break;
+			default:
+				printf("Invalid choice. Please try agian.\n");
+				break;
+			}
+		} while (choice != 4);
 
 	return 0;
 }
