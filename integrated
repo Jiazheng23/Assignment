@@ -28,6 +28,8 @@ void RecoveryPass();
 void displayStaffInfo();
 void deleteStaffInfo();
 void searchStaffInfo();
+void loginStaff();
+void error();
 
 //Schedule Modele Cuntion
 void addSchedule();
@@ -225,7 +227,7 @@ void loginStaff() {
 
 
 	printf("Enter Your Staff ID :");
-	scanf("%s", staffId);
+	scanf("%[^\n]", staffId);
 
 	AdminstratorModel StaffModel[50];
 	FILE* readStaffBinary;
