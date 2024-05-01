@@ -227,7 +227,7 @@ void loginStaff() {
 
 
 	printf("Enter Your Staff ID :");
-	scanf("%[^\n]", staffId);
+	scanf("%s", staffId);
 
 	AdminstratorModel StaffModel[50];
 	FILE* readStaffBinary;
