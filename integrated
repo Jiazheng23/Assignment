@@ -126,7 +126,7 @@ void error() {
 	printf("1.Go back main menu \n");
 	printf("2.Exit the program \n");
 	
-
+	rewind(stdin);
 	 do{
 		printf("Enter Your option:");
 		scanf("%d",&error);
@@ -209,12 +209,6 @@ void loginStaff() {
 	char enter,wrongOpiton;
 	char staffPass[20], staffId[20];
 
-	rewind(stdin);
-	printf("Enter Your Staff ID :");
-	scanf("%s", staffId);
-	
-
-
 	AdminstratorModel StaffModel[50];
 	FILE* readStaffBinary;
 	readStaffBinary = fopen("binary.bin", "rb");
@@ -234,14 +228,25 @@ void loginStaff() {
 
 	totalStaff = count;
 
-	//Search StaffId
-	for (int i = 0; i < totalStaff; i++) {
-		if (strcmp(StaffModel[i].staffId, staffId) == 0) {
-			found = i;		
+	
+	do{
+		rewind(stdin);
+		printf("Enter Your Staff ID (-1 exit):");
+		scanf("%s", staffId);
+		//Search StaffId
+		for (int i = 0; i < totalStaff; i++) {
+			if (strcmp(StaffModel[i].staffId, staffId) == 0) {
+				found = i;		
+			}
+
 		}
-	}
-	if (found == -1) {
-		printf("Can not found the Staff ID\n");
+		if (found == -1) {
+			printf("Can not found the Staff ID\n");
+		}
+	}while(found == -1 || staffId == -1);
+
+	if (staffId == -1) {
+		exit(-1);
 	}
 
 	do{
@@ -1342,11 +1347,12 @@ void displayMembers() {
 	}
 
 	printf("\n=== Member Information ===\n");
-	printf(" Member ID \t\t Member Name \t\t Gender \t\t    IC Number \t\t      Contact Number \n");
+	printf("Member ID\tMember Name\t\t\tGender\t\tIC Number\t\tContact Number\n");
 
 	Member displayMem;
 	while (fread(&displayMem, sizeof(Member), 1, memberFiles)) {
-		printf("  %s \t\t %s \t\t\t   %c\t\t\t %s\t\t\t %s\t\t\t\n", displayMem.memberID, displayMem.name, displayMem.gender, displayMem.icNo, displayMem.contactNo);
+		strlen(displayMem.name) == 1;
+		printf("%-6s\t\t%-21s\t\t%-1c\t\t%-13s\t\t%-10s\n", displayMem.memberID, displayMem.name, displayMem.gender, displayMem.icNo, displayMem.contactNo);
 	}
 
 	fclose(memberFiles);
