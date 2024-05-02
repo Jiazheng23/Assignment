@@ -238,26 +238,28 @@ void loginStaff() {
 			if (strcmp(StaffModel[i].staffId, staffId) == 0) {
 				found = i;		
 			}
-
 		}
 		if (found == -1) {
 			printf("Can not found the Staff ID\n");
 		}
-	}while(found == -1 || staffId == -1);
+		if (strcmp(staffId,"-1") == 0) {
+			exit(1);
+		}
+	}while(found == -1);
 
-	if (staffId == -1) {
-		exit(-1);
-	}
+	
 
 	do{
 		printf("Enter Your Staff Password :");
 		scanf("%s", staffPass);
-		if(strcmp(StaffModel[found].staffPass,"XXX") == 0) {
-			printf("The Staff already deleted");
-		}	
-		else if (strcmp(StaffModel[found].staffPass, staffPass) == 1) {
-			wrong--;
-		}
+
+			if(strcmp(StaffModel[found].staffPass,"XXX") == 0) {
+				printf("The Staff already deleted");
+			}	
+			else if (strcmp(StaffModel[found].staffPass, staffPass) == 1) {
+				wrong--;
+			}
+		
 	
 		if(wrong != 0)
 		{
@@ -522,46 +524,42 @@ void RecoveryPass() {
 	//search the data
 	for (int i = 0; i < totalStaff; i++) {
 		if (strcmp(StaffModel[i].staffId, input.staffId) == 0) {
+			found = i;
 			if(strcmp(StaffModel[i].staffIc, input.staffIc) == 0){
-				found = i;
-				break;
+				printf("Enter Your New Passwords:");
+				rewind(stdin);
+				scanf("%[^\n]",&StaffModel[found].staffPass);
+				printf("Double confirm your Passwords");
+				scanf("%[^\n]",&doublePass);
+				
+				if (StaffModel[found].staffPass != doublePass) {
+					printf("\t\tPlease Try again");
+					RecoveryPass();
+				}
+				else {
+					printf("Successful Change Your Passwords");
+					printf("Please remember your Passwords");
+					main();
+				}
+
+
+
+				FILE* writeNewPass;
+
+				//write the new passwords into the file
+				writeNewPass = fopen("binary.bin", "wb");
+				for (int i = 0; i < totalStaff; i++) {
+					fwrite(&StaffModel[i], sizeof(AdminstratorModel), 1, writeNewPass);
+				}
+
+
+				fclose(writeNewPass);
 			}
 		}
 	}
 	
 	if (found == -1) {
 		printf("Not Found");
-	}
-	else {
-		printf("Enter Your New Passwords:");
-		rewind(stdin);
-		scanf("%[^\n]",&StaffModel[found].staffPass);
-		printf("Double confirm your Passwords");
-		scanf("%[^\n]",&doublePass);
-		
-		//confirm the password for the user
-		if (StaffModel[found].staffPass != doublePass) {
-			printf("\t\tPlease Try again");
-			RecoveryPass();
-		}
-		else {
-			printf("Successful Change Your Passwords");
-			printf("Please remember your Passwords");
-			main();
-		}
-	
-	
-		
-		FILE * writeNewPass;
-
-		//write the new passwords into the file
-		writeNewPass = fopen("binary.bin","wb");
-		for (int i = 0; i < totalStaff; i++) {
-			fwrite(&StaffModel[i],sizeof(AdminstratorModel),1,writeNewPass);
-		}
-		
-
-		fclose(writeNewPass);
 	}
 }
 
@@ -1605,8 +1603,8 @@ void bookTicket() {
 	//RECORDS the amount of rows in file and their values
 	int record = 0;
 	while (!feof(readTicketPT)) {
-		fscanf(readTicketPT, "B%d|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|T%d|%c|%d|%lf\n", &ticket[record].bookingNo, ticket[record].memberID,
-			ticket[record].bookingDate, ticket[record].departDate, ticket[record].departStation, ticket[record].arriveStation,
+		fscanf(readTicketPT, "B%d|%[^|]|%[^|]|%d-%d-%d|%[^|]|%[^|]|T%d|%c|%d|%lf\n", &ticket[record].bookingNo, ticket[record].memberID,
+			ticket[record].bookingDate, &ticket[record].day, &ticket[record].month, &ticket[record].year, ticket[record].departStation, ticket[record].arriveStation,
 			&ticket[record].trainNo, &ticket[record].coach, &ticket[record].seatNo, &ticket[record].payment);
 		record++;
 	};
@@ -1657,17 +1655,38 @@ void bookTicket() {
 		bookTicketHeading();
 		payment(user.quantity);
 
-		/*input TRAIN ID*/
+		// Validate user's selected seat against existing booked tickets
+		int validSeat = 1; // Assume seats are initially valid
+		for (int i = 0; i < record; i++) {
+			if ((user.day == ticket[i].day) && (user.month == ticket[i].month) && (user.year == ticket[i].year) &&
+				strcmp(user.departStation, ticket[i].departStation) == 0 && user.coach == ticket[i].coach) {
+				for (int y = 0; y < record; y++) {
+					for (int z = 0; z < user.quantity; z++) {
+						if (user.seatNo[z] == ticket[i].seatNo[y]) {
+							validSeat = 0; // Seat already booked
+							printf("Seat %d in coach %c is already booked for the selected date and station.\n", ticket[i].seatNo[y], user.coach);
+							printf("Please choose a different seat.\n");
+							break; // Break out of the inner loop
+						}
+					}
+					if (!validSeat) {
+						break; // Break out of the outer loop
+					}
+				}
+			}
+			if (!validSeat) {
+				break; // Break out of the outer loop
+			}
+		}
 
-		/*input TIME*/
-
-		//INSERT VALUE INTO FILE, CHANGE LATER FOR TRAIN ID & TIME (SCHEDULE)
-		insertBooking = fopen("Bookings.txt", "a");
-		for (int row = 0; row < user.quantity; row++) {
-			fprintf(insertBooking, "B%d|%s|%02d-%02d-%d|%02d-%02d-%d|%s|%s|T101|%c|%d|30.00\n", (ticket[record - 1].bookingNo + 1 + row),
-				user.memberID, sysDay, sysMonth, sysYear, user.day, user.month, user.year, user.departStation, user.arriveStation,
-				user.coach, user.seatNo[row]);
-			printf("Your No\.%d booking ID is B%d \n", (row + 1), (ticket[record - 1].bookingNo + 1 + row));
+		if (validSeat) {
+			insertBooking = fopen("Bookings.txt", "a");
+			for (int row = 0; row < user.quantity; row++) {
+				fprintf(insertBooking, "B%d|%s|%02d-%02d-%d|%02d-%02d-%d|%s|%s|T101|%c|%d|30.00\n", (ticket[record - 1].bookingNo + 1 + row),
+					user.memberID, sysDay, sysMonth, sysYear, user.day, user.month, user.year, user.departStation, user.arriveStation,
+					user.coach, user.seatNo[row]);
+				printf("Your No\.%d booking ID is B%d \n", (row + 1), (ticket[record - 1].bookingNo + 1 + row));
+			}
 		}
 	}
 	else {
@@ -1675,7 +1694,6 @@ void bookTicket() {
 	}
 	fclose(insertBooking);
 }
-
 //SEARCH FOR BOOKING ID 
 void checkTicketStatus() {
 	typedef struct {
