@@ -144,7 +144,7 @@ void bookTicket() {
 	//DECLARATIONS
 	typedef struct {
 		char memberID[6], bookingDate[11], departDate[11], departStation[40], arriveStation[40], coach;
-		int bookingNo, memberNo, trainNo, seatNo[7], quantity, day, month, year, hour, minute;
+		int bookingNo, trainNo, seatNo[7], quantity, day, month, year, hour, minute;
 		double payment;
 	}TrainTicket;
 	TrainTicket ticket[100];
