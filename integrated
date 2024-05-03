@@ -75,8 +75,18 @@ void getSeatNo(int* seatNo, int noOfSeat, int warning);
 void payment(int quantity);
 
 
+
+
 void mainMenu() {
 	system("cls");
+
+	printf("    o o o o o o o . . .   ______________________________ _____=======_||____\n");
+	printf("   o      _____           ||                            | |                 |\n");
+	printf(" .][__n_n_|DD[  ====_____  |                            | |                 |\n");
+	printf(">(________|__|_[_________]_|____________________________|_|_________________|\n");
+	printf("_/oo OOOOO oo`  ooo   ooo  'o!o!o                  o!o!o` 'o!o         o!o`\n");
+	printf("-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n\n");
+
 	printf("Welcome to the balalalala Train !!\n");
 	printf("Select the Mode                   \n");
 	printf("1.Staff Mode                      \n");
