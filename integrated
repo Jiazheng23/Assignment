@@ -30,6 +30,7 @@ void deleteStaffInfo();
 void searchStaffInfo();
 void loginStaff();
 void error();
+void modifyStaff();
 
 //Schedule Modele Cuntion
 void addSchedule();
@@ -163,16 +164,17 @@ void StaffMenu1() {
 	int staffOption1;
 	printf("\t\tSuccessful Login		\n");
 	printf("1.Display Staff Information \n");
-	printf("2.Search Staff              \n");
-	printf("3.Delete Staff              \n");
-	printf("4.Search Member Information \n");
-	printf("5.Delete Member Information \n");
-	printf("6.Display Member Information\n");
-	printf("7.Edit Schedule				\n");
-	printf("8.Display Booked Tickets    \n");
-	printf("9.Report                    \n");
-	printf("10.Go back menu             \n");
-	printf("11.Exit                     \n");
+	printf("2.Search Staff Information  \n");
+	printf("3.Delete Staff Information  \n");
+	printf("4.Modify Staff Information  \n");
+	printf("5.Search Member Information \n");
+	printf("6.Delete Member Information \n");
+	printf("7.Display Member Information\n");
+	printf("8.Edit Schedule				\n");
+	printf("9.Display Booked Tickets    \n");
+	printf("10.Report                    \n");
+	printf("11.Go back menu             \n");
+	printf("12.Exit                     \n");
 
 	printf("Enter Your Option :");
 	scanf("%d", &staffOption1);
@@ -189,24 +191,26 @@ void StaffMenu1() {
 	case 3:deleteStaffInfo();
 		break;
 		//go back menu
-	case 4:searchMemberInfo();
+	case 4:modifyStaff();
 		break;
 		//exit
-	case 5:deleteMember();
+	case 5:searchMemberInfo();
 		break;
-	case 6:displayMembers();
+	case 6:deleteMember();
 		break;
-	case 7:editSchedule();
+	case 7:displayMembers();
 		break;
-	case 8:displayBookedTickets();
+	case 8:editSchedule();
 		break;
-	case 9:report();
+	case 9:displayBookedTickets();
 		break;
-	case 10:main();
+	case 10:report();
 		break;
-	case 11:exit(-1);
+	case 11:main();
 		break;
 	//error
+	case 12:exit(-1);
+		break;
 	default:error();
 	}
 }
@@ -337,7 +341,7 @@ void deleteStaffInfo() {
 
 	int totalStaff = 0;
 		totalStaff = count;
-	printf("Enter Your Staff ID :");
+	printf("Enter The Staff ID you want to delete :");
 	scanf("%s", staffId);
 
 	printf("=====================================================================================================================================\n");
@@ -570,13 +574,9 @@ void RecoveryPass() {
 				for (int i = 0; i < totalStaff; i++) {
 					fwrite(&StaffModel[i], sizeof(AdminstratorModel), 1, writeNewPass);
 				}
-
-
 				fclose(writeNewPass);
 		}
 	}
-	
-	
 }
 
 int countStaffNumber(int* totalStaff) {
@@ -672,7 +672,7 @@ int addStaffInfo() {
 	rewind(stdin);
 	scanf("%s", StaffModel.position);
 	
-	if (strcmp(StaffModel.position,"Staff") || strcmp(StaffModel.position, "Boss")) {
+	if (strcmp(StaffModel.position,"Staff") == 0 || strcmp(StaffModel.position, "Boss") == 0) {
 		fwrite(&StaffModel, sizeof(AdminstratorModel), 1, staffBinary);
 		printf("\nSuccessful Create New Staff! ");
 
@@ -693,7 +693,95 @@ int addStaffInfo() {
 	fclose(staffBinary);
 }
 
+void modifyStaff() {
+	int found = -1;
+	char staffPass[20], staffId[20], option1, staffName[20],position[7];
+	char again, confirm;
 
+	AdminstratorModel StaffModel[50];
+	FILE* readStaffBinary;
+	readStaffBinary = fopen("binary.bin", "rb");
+
+	if (readStaffBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	int count = 0;
+	//count the staffmodel array
+	rewind(stdin);
+	while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readStaffBinary)) {
+		count++;
+	}
+	fclose(readStaffBinary);
+
+	int totalStaff = 0;
+	totalStaff = count;
+	printf("Enter The Staff ID you want to modify :");
+	scanf("%s", staffId);
+
+	printf("=====================================================================================================================================\n");
+	printf(" Staff ID \t\t Staff Name \t\tStaff IC \t\t\tStaff Passwords \t\tPosition \t\t\n");
+
+	for (int i = 0; i < totalStaff; i++) {
+		if (strcmp(StaffModel[i].staffId, staffId) == 0) {
+			found = i;
+			printf(" %-6s\t\t\t %-21s\t%-15s\t\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc, StaffModel[i].staffPass, StaffModel[i].position);
+		}
+	}
+	printf("=====================================================================================================================================\n");
+
+	if (found == -1) {
+		printf("Not Found the Staff Information\n");
+		printf("Do you want to try again?(Y/N)\n");
+		scanf("%c", &again);
+		if (toupper(again) == 'Y') {
+			deleteStaffInfo();
+		}
+		else {
+			main();
+		}
+	}
+	else {
+		rewind(stdin);
+		printf("Are you sure u want to modify this Staff Information?(Y/N):");
+		scanf("%c", &confirm);
+
+		if (toupper(confirm) == 'Y') {
+			rewind(stdin);
+			printf("\nEnter New Name:");
+			scanf("%[^\n]",staffName);
+			rewind(stdin);
+			printf("\nEnter New Passwords:");
+			scanf("%[^\n]", staffPass);
+			rewind(stdin);
+			printf("\nEnter New Position:");
+			scanf("%s", position);
+
+
+			strcpy(StaffModel[found].staffName, staffName);
+			strcpy(StaffModel[found].staffPass, staffPass);
+			strcpy(StaffModel[found].position, position);
+			printf("The Staff infomation already modify");
+		}
+		else {
+			printf("Nobody will be mofify");
+			main();
+		}
+	}
+	FILE* writeBinary;
+
+	writeBinary = fopen("binary.bin", "wb");
+
+	if (writeBinary == NULL) {
+		printf("Failed to open file\n");
+		return 1;
+	}
+	for (int i = 0; i < totalStaff; i++) {
+		fwrite(&StaffModel[i], sizeof(AdminstratorModel), 1, writeBinary);
+	}
+	fclose(writeBinary);
+}
+		
 void nonMemberMenu() {
 	FILE* fp;
 	fp = fopen("members.bin", "ab+");
@@ -941,7 +1029,6 @@ void passwordRecovery() {
 
 	} while (toupper(confirm) != 'Y' && toupper(confirm) != 'N');
 }
-
 
 int memberLogin() {
 	char enteredMemberID[20];
