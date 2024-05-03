@@ -14,7 +14,7 @@ typedef struct {
 }SchedulingModel;
 
 typedef struct {
-	char staffId[7],staffName[20],staffIc[14],staffPass[20];
+	char staffId[7],staffName[20],staffIc[15],staffPass[20];
 	char position[7];
 }AdminstratorModel;
 
@@ -68,7 +68,7 @@ void getBookingID(char bookingID[6], int warning);
 void getMemberID(char memberID[6], int warning);
 void getDepartDate(int* day, int* month, int* year, int sysyear, int warning);
 void getCurrentTime(int* sysday, int* sysmonth, int* sysyear);
-void getStation(char departStation[40], char arriveStation[40], int warning);
+void getStation(char departStation[40], char arriveStation[40], int* trainNo, int warning);
 void getQuantity(int* quantity, int warning);
 char getCoach(int warning);
 void getSeatNo(int* seatNo, int noOfSeat, int warning);
@@ -239,8 +239,15 @@ void loginStaff() {
 			if (strcmp(StaffModel[i].staffId, staffId) == 0) {
 				found = i;		
 			}
-			
 		}
+		if(found == -1) {
+			if (strcmp(staffId,"-1") != 1) {
+			exit(1);
+			}
+			printf("Can not found the Staff ID\n");	
+		}
+	} while (found == -1);
+
 		if (strcmp(StaffModel[found].staffName, "XXXX") == 0) {
 			printf("The staff already deleted!\n");
 			
@@ -256,13 +263,7 @@ void loginStaff() {
 				exit(-1);
 			}
 		}
-		else if(found == -1) {
-			printf("Can not found the Staff ID\n");
-		}
-		else if (strcmp(staffId,"-1") == 0) {
-			exit(1);
-		}
-
+		
 		do{
 			printf("Enter Your Staff Password :");
 			scanf("%s", staffPass);
@@ -305,10 +306,7 @@ void loginStaff() {
 			}
 
 		}while(strcmp(StaffModel[found].staffPass, staffPass) != 0 || wrong == 0);
-
-	}while(found == -1);
 }
-
 
 void deleteStaffInfo() {
 	int found = -1;
@@ -331,7 +329,6 @@ void deleteStaffInfo() {
 		}
 	fclose(readStaffBinary);
 
-
 	int totalStaff = 0;
 		totalStaff = count;
 	printf("Enter Your Staff ID :");
@@ -343,13 +340,11 @@ void deleteStaffInfo() {
 	for (int i = 0; i < totalStaff; i++) {
 		if (strcmp(StaffModel[i].staffId, staffId ) == 0) {
 			found = i;
-			printf(" %-6s\t\t\t %-21s\t%-15s\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc, StaffModel[i].staffPass, StaffModel[i].position);
+			printf(" %-6s\t\t\t %-21s\t%-15s\t\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc, StaffModel[i].staffPass, StaffModel[i].position);
 		}
 	}
 	printf("=====================================================================================================================================\n");
 	
-
-
 	if (found == -1) {
 		printf("Not Found the Staff Information\n");
 		printf("Do you want to try again?(Y/N)\n");
@@ -423,10 +418,10 @@ void searchStaffInfo() {
 			if (strcmp(StaffModel[i].staffId, staffId) == 0) {
 				found = i;
 				if (strcmp(StaffModel[i].staffName, "XXX") != 1) {
-					printf(" %-6s\t\t\t %-21s\t%-15s\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
+					printf(" %-6s\t\t\t %-21s\t%-15s\t\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
 				}
 				else {
-					printf(" %-6s\t\t\t %-21s\t%-15s\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
+					printf(" %-6s\t\t\t %-21s\t%-15s\t\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
 					deleted++;
 				}
 			}
@@ -474,40 +469,39 @@ void displayStaffInfo() {
 		printf("Failed to open file\n");
 		return 1;
 	}
+
 	int count = 0 , deleted = 0;
 	char option;
+
 	//read the data from file and print out
 	printf("=====================================================================================================================================\n");
 	printf(" Staff ID \t\t Staff Name \t\tStaff IC \t\t\tStaff Passwords \t\tPosition \t\t\n");
 	while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
-		if (strcmp(StaffModel.staffName, "XXX") != 1) {
-			printf(" %-6s\t\t\t %-21s\t%-15s\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel.staffId, StaffModel.staffName,StaffModel.staffIc, StaffModel.staffPass, StaffModel.position);
+		if (strcmp(StaffModel.staffName, "XXX") == 1) {
+			deleted++;
 		}
 		else {
-			deleted++;
-			
+			printf(" %-6s\t\t\t %-21s\t%-15s\t\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel.staffId, StaffModel.staffName,StaffModel.staffIc, StaffModel.staffPass, StaffModel.position);
 		}
 	}
+	fclose(readStaffBinary);
+
 	printf("=====================================================================================================================================\n");
 
-	printf("%d Staff already deleted",deleted);
-	printf("Do you want go back main menu?(Y/N)");
+	printf("%d Staff already deleted\n",deleted);
+	printf("Do you want go back main menu?(Y/N):");
 	scanf("%c",&option);
-	option = toupper(option);
 
-	if (option == "Y") {
+	if (toupper(option) == 'Y') {
 		system("cls");
 		main();
 	}
-	else if (option == 'N') {
+	else if (toupper(option) == 'N') {
 		exit(-1);
 	}
 	else {
 		error();
 	}
-
-
-	fclose(readStaffBinary);
 }
 
 
@@ -516,6 +510,20 @@ void RecoveryPass() {
 	AdminstratorModel input;
 	char found = -1,doublePass;
 	int totalStaff;
+	
+	FILE* readStaffBinary;
+		readStaffBinary = fopen("binary.bin", "rb");
+
+		if (readStaffBinary == NULL) {
+			printf("Failed to open file\n");
+			return 1;}
+		int count = 0;
+		//count how many staffmodel 
+		while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
+			count++;
+		}
+	totalStaff = count;
+	fclose(readStaffBinary);
 
 	rewind(stdin);
 	printf("Enter Your Staff ID :");
@@ -524,44 +532,31 @@ void RecoveryPass() {
 	scanf("%s",input.staffIc);
 
 
-	FILE* readStaffBinary;
-	readStaffBinary = fopen("binary.bin", "rb");
-
-	if (readStaffBinary == NULL) {
-		printf("Failed to open file\n");
-		return 1;}
-	int count = 0;
-	//count how many staffmodel 
-	while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
-		count++;
-	}
-	
-	fclose(readStaffBinary);
-
-	totalStaff = count;
 	//search the data
 	for (int i = 0; i < totalStaff; i++) {
 		if (strcmp(StaffModel[i].staffId, input.staffId) == 0) {
 			found = i;
-			if(strcmp(StaffModel[i].staffIc, input.staffIc) == 0){
-				printf("Enter Your New Passwords:");
-				rewind(stdin);
-				scanf("%[^\n]",&StaffModel[found].staffPass);
-				printf("Double confirm your Passwords");
-				scanf("%[^\n]",&doublePass);
+			}
+		if (found == -1) {
+			printf("Not Found\n");
+			break;
+		}
+		if(strcmp(StaffModel[i].staffIc, input.staffIc) == 1){
+			printf("Enter Your New Passwords:");
+			rewind(stdin);
+			scanf("%[^\n]",&StaffModel[found].staffPass);
+			printf("Double confirm your Passwords");
+			scanf("%[^\n]",&doublePass);
 				
-				if (StaffModel[found].staffPass != doublePass) {
-					printf("\t\tPlease Try again");
-					RecoveryPass();
-				}
-				else {
-					printf("Successful Change Your Passwords");
-					printf("Please remember your Passwords");
-					main();
-				}
-
-
-
+			if (StaffModel[found].staffPass != doublePass) {
+				printf("\t\tPlease Try again");
+				RecoveryPass();
+			}
+			else {
+				printf("Successful Change Your Passwords");
+				printf("Please remember your Passwords");
+				main();
+			}
 				FILE* writeNewPass;
 
 				//write the new passwords into the file
@@ -572,13 +567,10 @@ void RecoveryPass() {
 
 
 				fclose(writeNewPass);
-			}
 		}
 	}
 	
-	if (found == -1) {
-		printf("Not Found");
-	}
+	
 }
 
 int countStaffNumber(int* totalStaff) {
@@ -1609,7 +1601,7 @@ void bookTicket() {
 
 	typedef struct {
 		char memberID[6], departStation[40], arriveStation[40], coach;
-		int day, month, year, quantity, seatNo[6];
+		int day, month, year, quantity, seatNo[6], trainNo;
 	}Info;
 	Info user;
 
@@ -1644,11 +1636,11 @@ void bookTicket() {
 		getCurrentTime(&sysDay, &sysMonth, &sysYear);
 		getDepartDate(&user.day, &user.month, &user.year, sysYear, warning);
 
-		//input DEPART AND ARRIVE STATION
+		//input DEPART AND ARRIVE STATION, get trainNo
 		system("cls");
 		bookTicketHeading();
 		stations();
-		getStation(user.departStation, user.arriveStation, warning);
+		getStation(user.departStation, user.arriveStation, &user.trainNo, warning);
 
 		//input BOOKING QUANTITY
 		system("cls");
@@ -1677,7 +1669,7 @@ void bookTicket() {
 		int validSeat = 1; // Assume seats are initially valid
 		for (int i = 0; i < record; i++) {
 			if ((user.day == ticket[i].day) && (user.month == ticket[i].month) && (user.year == ticket[i].year) &&
-				strcmp(user.departStation, ticket[i].departStation) == 0 && user.coach == ticket[i].coach) {
+				strcmp(user.departStation, ticket[i].departStation) == 0 && (user.trainNo == ticket[i].trainNo) && (user.coach == ticket[i].coach)) {
 				for (int y = 0; y < record; y++) {
 					for (int z = 0; z < user.quantity; z++) {
 						if (user.seatNo[z] == ticket[i].seatNo[y]) {
@@ -1700,9 +1692,9 @@ void bookTicket() {
 		if (validSeat) {
 			insertBooking = fopen("Bookings.txt", "a");
 			for (int row = 0; row < user.quantity; row++) {
-				fprintf(insertBooking, "B%d|%s|%02d-%02d-%d|%02d-%02d-%d|%s|%s|T101|%c|%d|30.00\n", (ticket[record - 1].bookingNo + 1 + row),
+				fprintf(insertBooking, "B%d|%s|%02d-%02d-%d|%02d-%02d-%d|%s|%s|T%d|%c|%d|30.00\n", (ticket[record - 1].bookingNo + 1 + row),
 					user.memberID, sysDay, sysMonth, sysYear, user.day, user.month, user.year, user.departStation, user.arriveStation,
-					user.coach, user.seatNo[row]);
+					user.trainNo, user.coach, user.seatNo[row]);
 				printf("Your No\.%d booking ID is B%d \n", (row + 1), (ticket[record - 1].bookingNo + 1 + row));
 			}
 		}
@@ -1712,6 +1704,7 @@ void bookTicket() {
 	}
 	fclose(insertBooking);
 }
+
 //SEARCH FOR BOOKING ID 
 void checkTicketStatus() {
 	typedef struct {
@@ -1774,6 +1767,7 @@ void checkTicketStatus() {
 	fclose(readTicketPT);
 }
 
+
 //EDIT BOOKING ID
 void editBooking() {
 	typedef struct {
@@ -1828,7 +1822,7 @@ void editBooking() {
 				system("cls");
 				editTicketHeading();
 				stations();
-				getStation(ticket[row].departStation, ticket[row].arriveStation, warning);
+				getStation(ticket[row].departStation, ticket[row].arriveStation, &ticket[row].trainNo, warning);
 				system("cls");
 				editTicketHeading();
 				displayCoach();
@@ -2102,7 +2096,7 @@ void getCurrentTime(int* sday, int* smonth, int* syear) {
 	*syear = date.tm_year + 1900;
 }
 
-void getStation(char departStation[40], char arriveStation[40], int warning) {
+void getStation(char departStation[40], char arriveStation[40], int* trainNo, int warning) {
 	int dStat, aStat; //represents departure and arrival stations
 	do {
 		if (warning > 0) {
@@ -2213,6 +2207,13 @@ void getStation(char departStation[40], char arriveStation[40], int warning) {
 	}
 	else {
 		strcpy(arriveStation, "JB Sentral");
+	}
+
+	if (dStat < aStat) {
+		*trainNo = 1;
+	}
+	else {
+		*trainNo = 2;
 	}
 }
 
