@@ -82,9 +82,9 @@ void mainMenu() {
 	printf("1.Staff Mode                      \n");
 	printf("2.Member Mode                     \n");
 	printf("3.Non-Member                      \n");
-	//printf("4.Train Schedule                  \n");
-	//printf("5.Ticket Booking                  \n");
 	printf("4.Exit                            \n");
+
+	printf("Enter Your Option :");
 }
 
 void staffMode() {
@@ -94,7 +94,6 @@ void staffMode() {
 	printf("2.create staff \n");
 	printf("3.go back menu \n");
 	printf("4.exit         \n");
-
 
 	int staffOption;
 
@@ -160,11 +159,10 @@ void StaffMenu1() {
 	printf("5.Delete Member Information \n");
 	printf("6.Display Member Information\n");
 	printf("7.Edit Schedule				\n");
-	printf("8.Add Schedule              \n");
-	printf("9.Display Booking			\n");
-	printf("10.Display Booked Tickets    \n");
-	printf("11.Go back menu              \n");
-	printf("12.Exit                      \n");
+	printf("8.Display Booked Tickets    \n");
+	printf("9.Report                    \n");
+	printf("10.Go back menu             \n");
+	printf("11.Exit                     \n");
 
 	printf("Enter Your Option :");
 	scanf("%d", &staffOption1);
@@ -190,15 +188,13 @@ void StaffMenu1() {
 		break;
 	case 7:editSchedule();
 		break;
-	case 8:addSchedule();
+	case 8:displayBookedTickets();
 		break;
-	case 9:exit(-1);
+	case 9:report();
 		break;
-	case 10:displayBookedTickets();
+	case 10:main();
 		break;
-	case 11:main();
-		break;
-	case 12:exit(-1);
+	case 11:exit(-1);
 		break;
 	//error
 	default:error();
@@ -1990,7 +1986,7 @@ void displayBookedTickets() {
 		printf("Booking ID\tMember ID\tDeparture Date\tArrival Date\tDeparture Station\tDestination\t\tTrain ID\tCoach ID\tSeat No\n");
 		printf("----------\t---------\t--------------\t------------\t-----------------\t-----------\t\t--------\t--------\t-------\n");
 		for (int i = 0; i < record; i++) {
-			printf("%s\t\t%s\t\t%s\t%s\t%-14s\t\t%-14s\t\tT%d\t\t%c\t\t%d\n", ticket[i].bookingID, ticket[i].memberID,
+			printf("%s\t\t%s\t\t%s\t%s\t%-14s\t\t%-14s\t\tT%d   \t\t  %c     \t\t%d\n", ticket[i].bookingID, ticket[i].memberID,
 				ticket[i].bookingDate, ticket[i].departDate, ticket[i].departStation, ticket[i].arriveStation,
 				ticket[i].trainNo, ticket[i].coach, ticket[i].seatNo);
 		}
@@ -2030,11 +2026,11 @@ void report() {
 		displayTicketHeading();
 		getCurrentTime(&sysDay, &sysMonth, &sysYear);
 		printf("\n");
-		printf("%-12s %-12s %-15s %-15s %-20s %-20s %-9s %-9s %-8s\n", "Booking ID", "Member ID", "Departure Date", "Arrival Date", "Departure Station", "Destination", "Train ID", "Coach ID", "Seat No");
-		printf("%-12s %-12s %-15s %-15s %-20s %-20s %-9s %-9s %-8s\n", "----------", "---------", "--------------", "------------", "-----------------", "-----------", "--------", "--------", "-------");
+		printf("%-12s %-11s%-15s %-15s %-20s %-20s %-9s %-9s %-8s\n", "Booking ID", "Member ID", "Departure Date", "Arrival Date", "Departure Station", "Destination", "Train ID", "Coach ID", "Seat No");
+		printf("%-12s %-11s%-15s %-15s %-20s %-20s %-9s %-9s %-8s\n", "----------", "---------", "--------------", "------------", "-----------------", "-----------", "--------", "--------", "-------");
 		for (int i = 0; i < record; i++) {
 			if ((ticket[i].day == sysDay) && (ticket[i].month == sysMonth) && (ticket[i].year == sysYear)) {
-				printf("%s\t\t%s\t\t%02d-%02d-%d\t%s\t%-14s\t\t%-14s\t\tT%d\t\t%c\t\t%d\n", ticket[i].bookingID, ticket[i].memberID,
+				printf("%s\t\t%-7s\t%02d-%02d-%d\t%s\t%-14s\t\t%-14s\t\tT%d\t%c\t %-10d\n", ticket[i].bookingID, ticket[i].memberID,
 					ticket[i].day, ticket[i].month, ticket[i].year, ticket[i].departDate, ticket[i].departStation, ticket[i].arriveStation,
 					ticket[i].trainNo, ticket[i].coach, ticket[i].seatNo);
 			}
