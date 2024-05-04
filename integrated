@@ -305,6 +305,7 @@ void loginStaff() {
 
 				if (wrongOpiton == 'Y') {
 					RecoveryPass();
+					break;
 				}
 				else if (wrongOpiton == 'N') {
 					system("cls");
@@ -349,6 +350,7 @@ void deleteStaffInfo() {
 
 	printf("=====================================================================================================================================\n");
 	printf(" Staff ID \t\t Staff Name \t\tStaff IC \t\t\tStaff Passwords \t\tPosition \t\t\n");
+	printf("=====================================================================================================================================\n");
 
 	for (int i = 0; i < totalStaff; i++) {
 		if (strcmp(StaffModel[i].staffId, staffId ) == 0) {
@@ -426,24 +428,25 @@ void searchStaffInfo() {
 
 	printf("=====================================================================================================================================\n");
 	printf(" Staff ID \t\t Staff Name \t\tStaff IC \t\t\tStaff Passwords \t\tPosition \t\t\n");
+	printf("=====================================================================================================================================\n");
 
 	for (int i = 0; i < totalStaff; i++) {
 			if (strcmp(StaffModel[i].staffId, staffId) == 0) {
 				found = i;
-				if (strcmp(StaffModel[i].staffName, "XXX") != 1) {
+				if (strcmp(StaffModel[i].staffName, "XXX") != 0) {
 					printf(" %-6s\t\t\t %-21s\t%-15s\t\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
 				}
 				else {
 					printf(" %-6s\t\t\t %-21s\t%-15s\t\t\t%-21s\t\t %-8s\t\t\t\n", StaffModel[i].staffId, StaffModel[i].staffName, StaffModel[i].staffIc ,StaffModel[i].staffPass, StaffModel[i].position);
 					deleted++;
+					printf("The Staff already deleted\n");
 				}
 			}
 	}
 	printf("=====================================================================================================================================\n");
 
 			rewind(stdin);
-			printf("The Staff already deleted");
-			printf("Do you want to search another Staff?(Y/N)");
+			printf("Do you want to search another Staff?(Y/N) :");
 			scanf("%c",&again1);
 			again1 = toupper(again1);
 
@@ -489,6 +492,7 @@ void displayStaffInfo() {
 	//read the data from file and print out
 	printf("=====================================================================================================================================\n");
 	printf(" Staff ID \t\t Staff Name \t\tStaff IC \t\t\tStaff Passwords \t\tPosition \t\t\n");
+	printf("=====================================================================================================================================\n");
 	while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
 		if (strcmp(StaffModel.staffName, "XXX") == 1) {
 			deleted++;
@@ -520,66 +524,79 @@ void displayStaffInfo() {
 
 void RecoveryPass() {
 	AdminstratorModel StaffModel[30];
-	AdminstratorModel input;
-	char found = -1,doublePass;
+	char found = -1, staffPass[20], staffIc[15], doublePass[20], staffId[7];
 	int totalStaff;
-	
-	FILE* readStaffBinary;
-		readStaffBinary = fopen("binary.bin", "rb");
 
-		if (readStaffBinary == NULL) {
-			printf("Failed to open file\n");
-			return 1;}
-		int count = 0;
-		//count how many staffmodel 
-		while (fread(&StaffModel, sizeof(AdminstratorModel), 1, readStaffBinary)) {
-			count++;
-		}
+	FILE* readStaffBinary;
+	readStaffBinary = fopen("binary.bin", "rb");
+
+	if (readStaffBinary == NULL) {
+		printf("Failed to open file\n");
+		return; // No need for 1 here
+	}
+
+	int count = 0;
+	// Count how many staffmodel
+	while (fread(&StaffModel[count], sizeof(AdminstratorModel), 1, readStaffBinary)) {
+		count++;
+	}
 	totalStaff = count;
 	fclose(readStaffBinary);
 
 	rewind(stdin);
 	printf("Enter Your Staff ID :");
-	scanf("%[^\n]",input.staffId);
+	scanf("%[^\n]", staffId);
+	rewind(stdin);
 	printf("Enter Your IC number :");
-	scanf("%s",input.staffIc);
+	scanf("%s", staffIc);
 
-
-	//search the data
+	// Search the data
 	for (int i = 0; i < totalStaff; i++) {
-		if (strcmp(StaffModel[i].staffId, input.staffId) == 0) {
+		if (strcmp(StaffModel[i].staffId, staffId) == 0) {
 			found = i;
-			}
-		if (found == -1) {
-			printf("Not Found\n");
 			break;
 		}
-		if(strcmp(StaffModel[i].staffIc, input.staffIc) == 1){
-			printf("Enter Your New Passwords:");
-			rewind(stdin);
-			scanf("%[^\n]",&StaffModel[found].staffPass);
-			printf("Double confirm your Passwords");
-			scanf("%[^\n]",&doublePass);
-				
-			if (StaffModel[found].staffPass != doublePass) {
-				printf("\t\tPlease Try again");
-				RecoveryPass();
-			}
-			else {
-				printf("Successful Change Your Passwords");
-				printf("Please remember your Passwords");
-				main();
-			}
-				FILE* writeNewPass;
-
-				//write the new passwords into the file
-				writeNewPass = fopen("binary.bin", "wb");
-				for (int i = 0; i < totalStaff; i++) {
-					fwrite(&StaffModel[i], sizeof(AdminstratorModel), 1, writeNewPass);
-				}
-				fclose(writeNewPass);
-		}
 	}
+
+	if (found == -1) {
+		printf("Not Found \n");
+		return; // No need to continue if not found
+	}
+
+	if (strcmp(StaffModel[found].staffIc, staffIc) != 0) {
+		printf("IC number doesn't match\n");
+		return; // No need to continue if IC number doesn't match
+	}
+
+	printf("Enter Your New Passwords      :");
+	rewind(stdin);
+	scanf("%[^\n]", staffPass);
+	printf("Double confirm your Passwords :");
+	rewind(stdin);
+	scanf("%[^\n]", doublePass);
+
+	if (strcmp(staffPass, doublePass) != 0) {
+		printf("Please Try again\n");
+		return;
+	}
+
+	strcpy(StaffModel[found].staffPass, staffPass);
+	printf("Successful Change Your Passwords\n");
+	printf("Please remember your Passwords\n");
+
+	FILE* writeBinary;
+	writeBinary = fopen("binary.bin", "wb");
+
+	if (writeBinary == NULL) {
+		printf("Failed to open file\n");
+		return;
+	}
+
+	for (int i = 0; i < totalStaff; i++) {
+		fwrite(&StaffModel[i], sizeof(AdminstratorModel), 1, writeBinary);
+	}
+
+	fclose(writeBinary);
 }
 
 int countStaffNumber(int* totalStaff) {
@@ -724,6 +741,7 @@ void modifyStaff() {
 
 	printf("=====================================================================================================================================\n");
 	printf(" Staff ID \t\t Staff Name \t\tStaff IC \t\t\tStaff Passwords \t\tPosition \t\t\n");
+	printf("=====================================================================================================================================\n");
 
 	for (int i = 0; i < totalStaff; i++) {
 		if (strcmp(StaffModel[i].staffId, staffId) == 0) {
