@@ -171,10 +171,11 @@ void StaffMenu1() {
 	printf("6.Delete Member Information \n");
 	printf("7.Display Member Information\n");
 	printf("8.Edit Schedule				\n");
-	printf("9.Display Booked Tickets    \n");
-	printf("10.Report                    \n");
-	printf("11.Go back menu             \n");
-	printf("12.Exit                     \n");
+	printf("9.Edit Booking              \n");
+	printf("10.Display Booked Tickets    \n");
+	printf("11.Report                    \n");
+	printf("12.Go back menu             \n");
+	printf("13.Exit                     \n");
 
 	printf("Enter Your Option :");
 	scanf("%d", &staffOption1);
@@ -202,14 +203,16 @@ void StaffMenu1() {
 		break;
 	case 8:editSchedule();
 		break;
-	case 9:displayBookedTickets();
+	case 9:editBooking();
 		break;
-	case 10:report();
+	case 10:displayBookedTickets();
 		break;
-	case 11:main();
+	case 11:report();
+		break;
+	case 12:main();
 		break;
 	//error
-	case 12:exit(-1);
+	case 13:exit(-1);
 		break;
 	default:error();
 	}
@@ -242,7 +245,7 @@ void loginStaff() {
 	
 	do{
 		rewind(stdin);
-		printf("Enter Your Staff ID (-1 exit):");
+		printf("Enter Your Staff ID (-1 exit) :");
 		scanf("%s", staffId);
 		//Search StaffId
 		for (int i = 0; i < totalStaff; i++) {
@@ -275,7 +278,7 @@ void loginStaff() {
 		}
 		
 		do{
-			printf("Enter Your Staff Password :");
+			printf("Enter Your Staff Password     :");
 			scanf("%s", staffPass);
 
 				if(strcmp(StaffModel[found].staffPass,"XXXX") == 0) {
@@ -633,13 +636,13 @@ int addStaffInfo() {
 
 	sprintf(StaffModel.staffId,"ST%04d",total);
 
-	printf("\nEnter your Name	   :");
+	printf("\nEnter your Name	                :");
 	rewind(stdin);
 	scanf("%[^\n]", StaffModel.staffName);
 
 	int valid1 = 1;
 	do {
-		printf("Enter IC number (XXXXXX-XX-XXXX): ");
+		printf("Enter IC number (XXXXXX-XX-XXXX):");
 		scanf("%s", StaffModel.staffIc);
 
 		valid = 1; //Check IC No format
@@ -663,12 +666,12 @@ int addStaffInfo() {
 	} while (!valid1);
 	
 
-	printf("\nEnter Your Password  :");
+	printf("Enter Your Password             :");
 	rewind(stdin);
 	scanf("%[^\n]", StaffModel.staffPass);
 
 
-	printf("\nEnter Your Position (Boss/Staff):");
+	printf("Enter Your Position (Boss/Staff):");
 	rewind(stdin);
 	scanf("%s", StaffModel.position);
 	
@@ -1291,8 +1294,7 @@ void memberMenu() {
 		printf("3. Delete\n");
 		printf("4. Check Ticket Status\n");
 		printf("5. Cancel Booking\n");
-		printf("6. Report\n");
-		printf("7. Logout and Exit\n");
+		printf("6. Logout and Exit\n");
 		printf("Enter your choice: ");
 		rewind(stdin);
 		scanf("%d", &choice);
@@ -1314,9 +1316,6 @@ void memberMenu() {
 			cancelBooking();
 			break;
 		case 6:
-			report();
-			break;
-		case 7:
 			printf("You Have Successfully Looged Out and Exit Member Menu. Have A Nice Day ^_^\n");
 			return;	
 		default:
