@@ -533,7 +533,7 @@ void RecoveryPass() {
 
 	if (readStaffBinary == NULL) {
 		printf("Failed to open file\n");
-		return; // No need for 1 here
+		return;
 	}
 
 	int count = 0;
@@ -544,6 +544,7 @@ void RecoveryPass() {
 	totalStaff = count;
 	fclose(readStaffBinary);
 
+	do{
 	rewind(stdin);
 	printf("Enter Your Staff ID :");
 	scanf("%[^\n]", staffId);
@@ -568,7 +569,9 @@ void RecoveryPass() {
 		printf("IC number doesn't match\n");
 		return; // No need to continue if IC number doesn't match
 	}
+	}while (strcmp(StaffModel[found].staffIc, staffIc) == 1 && strcmp(StaffModel[found].staffId, staffId) == 1);
 
+	do{
 	printf("Enter Your New Passwords      :");
 	rewind(stdin);
 	scanf("%[^\n]", staffPass);
@@ -576,10 +579,11 @@ void RecoveryPass() {
 	rewind(stdin);
 	scanf("%[^\n]", doublePass);
 
-	if (strcmp(staffPass, doublePass) != 0) {
-		printf("Please Try again\n");
-		return;
-	}
+		if (strcmp(staffPass, doublePass) != 0) {
+			printf("Please Try again\n");
+			return;
+		}
+	}while(strcmp(staffPass, doublePass) == 1);
 
 	strcpy(StaffModel[found].staffPass, staffPass);
 	printf("Successful Change Your Passwords\n");
