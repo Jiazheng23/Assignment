@@ -46,6 +46,7 @@ void deleteMemberAccount();
 void displayMembers();
 void deleteMember();
 void searchMemberInfo();
+void passwordRecovery();
 
 
 //Booking Modele
@@ -814,7 +815,7 @@ void nonMemberMenu() {
 
 	Member newMember;
 	int nameExists;
-
+	system("cls");
 	do {
 		nameExists = 0;
 
@@ -1056,7 +1057,7 @@ int memberLogin() {
 	char enteredPassword[20];
 	int loginChance = 0;
 	int maxLoginChances = 3;
-
+	system("cls");
 	do {
 		printf("\n=== Member Login ===\n");
 		printf("Enter Member ID: ");
@@ -1107,7 +1108,7 @@ void searchMemberInfo() {
 	char continueSearch;
 
 	totalMembers = countMembers();
-
+	system("cls");
 
 	do {
 		printf("\n === Member Search ===\n");
@@ -1131,7 +1132,7 @@ void searchMemberInfo() {
 			}
 		}
 		fclose(searchMember);
-
+		
 		if (found) { //Member ID found, display member information
 			printf("\n === Member Information === \n");
 			printf("Member ID      : %s\n", fileMember.memberID);
@@ -1152,6 +1153,7 @@ void searchMemberInfo() {
 	} while (toupper(continueSearch) == 'Y');
 
 	printf("Returning to Staff Menu\n");
+	StaffMenu1();
 }
 
 void modifyMemberInfo() {
@@ -1162,7 +1164,7 @@ void modifyMemberInfo() {
 	int totalMems;
 	char continousChoice;
 	int nameExisted;
-
+	system("cls");
 	do {
 		printf("\n === Modify Member Information ===\n");
 		printf("Enter Member ID: ");
@@ -1309,7 +1311,7 @@ void modifyMemberInfo() {
 
 void memberMenu() {
 	int choice;
-
+	system("cls");
 	memberLogin();
 
 	do {
@@ -1359,7 +1361,7 @@ void deleteMemberAccount() { //For Member Delete
 	int allMembers;
 
 	allMembers = countMembers();
-
+	system("cls");
 	printf("\n=== Delete Member Account ===\n");
 	printf("Enter Member ID: ");
 	rewind(stdin);
@@ -1450,7 +1452,7 @@ void displayMembers() {
 		printf("Error opening file.\n");
 		return;
 	}
-
+	system("cls");
 	printf("\n=== Member Information ===\n");
 	printf("Member ID\tMember Name\t\t\tGender\t\tIC Number\t\tContact Number\n");
 
@@ -1472,7 +1474,7 @@ void deleteMember() { //For Staff Delete
 	int lotOfMembers;
 
 	lotOfMembers = countMembers();
-
+	system("cls");
 	printf("\n=== Delete Member Account ===\n");
 	printf("Enter Member ID: ");
 	rewind(stdin);
@@ -1521,7 +1523,7 @@ void deleteMember() { //For Staff Delete
 		}
 		else {
 			printf("Returning to Staff Menu. \n");
-			staffMenu();
+			StaffMenu1();
 			return;
 		}
 	}
